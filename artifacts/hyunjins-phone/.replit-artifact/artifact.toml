@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Hyunjin's Phone"
+description = "A mobile-first fictional roleplay companion that simulates exploring Hyunjin's personal smartphone, with interactive apps, editable local content, and a reusable character configuration."
+version = "1.0.0"
+id = "artifacts/hyunjins-phone"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18372
+
+[services.development]
+run = "pnpm --filter @workspace/hyunjins-phone run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/hyunjins-phone", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/hyunjins-phone/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18372"
+BASE_PATH = "/"
