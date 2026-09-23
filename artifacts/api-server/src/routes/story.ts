@@ -228,14 +228,19 @@ router.post("/story/voice/audio", async (req, res) => {
 router.get("/story/voice/audio/:audioId", async (req, res) => {
   try {
     const { file, size } = await loadVoiceAudio(String(req.params.audioId));
-    const range = req.headers.range?.match(/^bytes=(\d+)-(\d*)$/);
-    const start = range ? Number(range[1]) : 0;
-    const end = range && range[2] ? Number(range[2]) : size - 1;
-    if (start >= size || end >= size || start > end) {
+    const rangeHeader = req.headers.range;
+    const range = rangeHeader?.match(/^bytes=(\d*)-(\d*)$/);
+    if (rangeHeader && (!range || (!range[1] && !range[2]))) {
+      res.status(416).set("Content-Range", `bytes */${size}`).end(); return;
+    }
+    const suffix = range && !range[1] ? Number(range[2]) : 0;
+    const start = suffix ? Math.max(0, size - suffix) : range ? Number(range[1]) : 0;
+    const end = range && range[1] && range[2] ? Math.min(Number(range[2]), size - 1) : size - 1;
+    if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start >= size || start > end || size <= 0) {
       res.status(416).set("Content-Range", `bytes */${size}`).end(); return;
     }
     res.set({ "Content-Type": "audio/wav", "Accept-Ranges": "bytes", "Cache-Control": "private, max-age=3600", "Content-Length": String(end - start + 1) });
-    if (range) res.status(206).set("Content-Range", `bytes ${start}-${end}/${size}`);
+    if (rangeHeader) res.status(206).set("Content-Range", `bytes ${start}-${end}/${size}`);
     file.createReadStream({ start, end }).on("error", error => {
       req.log.error({ err: error }, "Voice audio streaming failed");
       if (!res.headersSent) res.status(500).end(); else res.destroy(error);

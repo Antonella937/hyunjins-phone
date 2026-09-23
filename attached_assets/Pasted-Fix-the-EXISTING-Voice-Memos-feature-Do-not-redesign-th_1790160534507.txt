@@ -1,0 +1,185 @@
+Fix the EXISTING Voice Memos feature. Do not redesign the app or remove any existing content.
+
+CURRENT BUG:
+
+AI-generated Voice Memos appear correctly inside the Voice Memos app with a Play button and waveform/player UI.
+
+However, pressing Play does nothing and no audio can be heard.
+
+This means the current implementation appears to be creating Voice Memo metadata/transcripts and a simulated player UI without attaching a real playable audio file.
+
+I need REAL interactive audio playback.
+
+IMPORTANT:
+Do not simulate playback.
+Do not animate a waveform or Play button unless an actual audio source exists.
+Do not report that audio was generated unless a real playable audio file was successfully created.
+
+STEP 1 — INSPECT THE CURRENT IMPLEMENTATION
+
+Determine whether existing AI-generated Voice Memo records actually contain:
+
+* a persistent audio file
+* a valid audio URL/file identifier
+* a playable MIME type
+* a working HTMLAudioElement/audio source
+
+If they contain only transcript/title/duration metadata, treat them as “Transcript Only,” not generated audio.
+
+STEP 2 — REAL AUDIO PLAYER
+
+Connect the existing Voice Memo UI to real browser audio playback.
+
+Use a real HTML audio element / Audio API behind the existing custom interface.
+
+The existing Play button must:
+
+* load the memo’s actual audio source
+* start playback
+* change to Pause while playing
+
+Implement:
+Play
+Pause
+Seek
+Restart
+Current playback time
+Actual duration
+Playback progress
+Playback speed
+
+Only one Voice Memo should play at a time.
+
+The waveform/progress indicator must follow actual audio playback rather than a fake timer.
+
+STEP 3 — AI TEXT-TO-SPEECH
+
+AI-generated Voice Memos require TWO separate stages:
+
+1. Generate Transcript
+2. Generate Audio
+
+After the transcript is approved, provide:
+
+✨ Generate Audio
+
+This action must call a REAL server-side text-to-speech provider.
+
+The provider must return actual audio data/file output.
+
+Persist that file and associate its stable URL/file ID with the Voice Memo.
+
+Only after this succeeds should the memo display as playable.
+
+If no text-to-speech provider is currently connected, display:
+
+“Audio AI Provider Not Connected”
+
+Do NOT create fake audio.
+
+STEP 4 — AI PROVIDERS
+
+Inside the existing AI Providers/Admin section, add:
+
+Audio / TTS
+Status: Connected / Not Connected
+
+If the project currently has access to an audio-capable AI service, connect it through the backend.
+
+Otherwise create the secure integration point required for a TTS API.
+
+Never expose API keys in frontend/browser code.
+
+STEP 5 — VOICE
+
+Use an original fictional synthetic young adult male Korean voice.
+
+Desired characteristics:
+soft
+warm
+natural
+casual
+conversational
+emotionally expressive when appropriate
+natural pauses
+supports English and Korean when available
+
+Do NOT clone, imitate, recreate, or attempt to match Hyunjin’s real voice or the voice of any real person.
+
+STEP 6 — EXISTING FAKE VOICE MEMOS
+
+Do not delete existing AI-generated Voice Memo entries.
+
+If they currently have no actual audio file, label them:
+
+Transcript Only
+
+Provide a button:
+
+✨ Generate Audio
+
+so I can generate real audio for them later.
+
+STEP 7 — AUDIO STORAGE
+
+Generated audio must use persistent storage.
+
+Do NOT permanently store:
+blob:
+URLs
+temporary object URLs
+temporary preview URLs
+
+Store the actual audio file using the project’s persistent file/object storage and save its stable reference in the Voice Memo record.
+
+Audio must continue working after:
+
+* navigating to another app
+* refreshing
+* closing the PWA
+* reopening the PWA
+
+STEP 8 — IPHONE / PWA
+
+Make playback compatible with the installed iPhone PWA.
+
+Audio should begin only after an explicit user action such as pressing Play, to comply with mobile browser playback restrictions.
+
+Do not rely on autoplay.
+
+STEP 9 — ERROR STATES
+
+If Play is pressed but the audio source is missing, show:
+
+“No audio has been generated for this memo yet.”
+
+If the audio file fails to load, show:
+
+“Unable to load audio.”
+
+Do not silently fail.
+
+STEP 10 — TEST WITH REAL AUDIO
+
+Before reporting this feature as fixed, create ONE test Voice Memo using the configured TTS provider.
+
+Transcript:
+“Okay, note to self. Try that sketch again tomorrow with softer shadows and more empty space. I think that’s what was bothering me.”
+
+Generate an actual audio file.
+
+Then verify:
+
+1. The memo contains a valid persistent audio source.
+2. Pressing Play produces audible sound.
+3. Pause works.
+4. Resume works.
+5. Seeking works.
+6. Actual duration is displayed.
+7. Refresh the PWA.
+8. Press Play again.
+9. Audio still plays after refresh.
+
+Do not consider the feature fixed merely because a Voice Memo card, waveform, duration, or Play icon appears.
+
+The feature is only complete when pressing Play produces REAL audible audio.
