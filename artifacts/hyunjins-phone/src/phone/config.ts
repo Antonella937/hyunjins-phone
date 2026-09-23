@@ -44,7 +44,8 @@ export type StudioProject = { id: string; title: string; status: 'demo' | 'unfin
 export type Place = { id: string; name: string; category: string; location: string; notes?: string; saved?: boolean };
 export type InstagramStory = {
   id: string; user: string; caption: string; time: string; dataUrl?: string; imageId?: string;
-  source?: 'ai-generated'; imagePrompt?: string; location?: string;
+  contactId?: string; date?: string; createdAt?: string; expiresAt?: string; viewed?: boolean;
+  source?: 'ai-generated' | 'gallery' | 'upload' | 'manual'; imagePrompt?: string; location?: string;
   audience?: 'public' | 'close-friends'; taggedContactIds?: string[];
 };
 export type InstagramProfile = { displayName: string; username: string; bio: string; location: string; photoDataUrl?: string; imageId?: string };

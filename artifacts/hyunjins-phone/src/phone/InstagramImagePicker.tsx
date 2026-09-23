@@ -19,7 +19,7 @@ async function uploadDataUrl(dataUrl: string): Promise<string> {
   return result.imageId;
 }
 
-export function ImagePicker({ store, onSelect, onCancel, initialTab = 'gallery', initialPrompt = '' }: { store: PhoneStore; onSelect: (result: { imageId?: string; dataUrl?: string }) => void; onCancel: () => void; initialTab?: 'gallery' | 'upload' | 'ai'; initialPrompt?: string }) {
+export function ImagePicker({ store, commit, onSelect, onCancel, initialTab = 'gallery', initialPrompt = '' }: { store: PhoneStore; commit: (update: (s: PhoneStore) => PhoneStore) => void; onSelect: (result: { imageId?: string; dataUrl?: string; source?: 'gallery' | 'upload' | 'ai-generated' }) => void; onCancel: () => void; initialTab?: 'gallery' | 'upload' | 'ai'; initialPrompt?: string }) {
   const [tab, setTab] = useState<'gallery' | 'upload' | 'ai'>(initialTab);
   const [prompt, setPrompt] = useState(initialPrompt);
   const [generating, setGenerating] = useState(false);
@@ -39,7 +39,7 @@ export function ImagePicker({ store, onSelect, onCancel, initialTab = 'gallery',
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Upload failed');
-      onSelect({ imageId: data.imageId });
+      onSelect({ imageId: data.imageId, source: 'upload' });
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -74,7 +74,7 @@ export function ImagePicker({ store, onSelect, onCancel, initialTab = 'gallery',
     setError('');
     try {
       const imageId = await uploadDataUrl(preview.dataUrl);
-      onSelect({ imageId });
+      onSelect({ imageId, source: 'ai-generated' });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save the generated image.');
     } finally {
@@ -84,7 +84,7 @@ export function ImagePicker({ store, onSelect, onCancel, initialTab = 'gallery',
 
   const selectGallery = async (g: GalleryItem) => {
     if (g.imageId) {
-      onSelect({ imageId: g.imageId });
+      onSelect({ imageId: g.imageId, source: 'gallery' });
       return;
     }
     if (g.dataUrl) {
@@ -92,7 +92,11 @@ export function ImagePicker({ store, onSelect, onCancel, initialTab = 'gallery',
         setGenerating(true);
         setError('');
         const imageId = await uploadDataUrl(g.dataUrl);
-        onSelect({ imageId });
+        commit(s => ({
+          ...s,
+          gallery: s.gallery.map(item => item.id === g.id ? { ...item, imageId, dataUrl: undefined } : item),
+        }));
+        onSelect({ imageId, source: 'gallery' });
       } catch (err: any) {
         setError(err.message);
         setGenerating(false);

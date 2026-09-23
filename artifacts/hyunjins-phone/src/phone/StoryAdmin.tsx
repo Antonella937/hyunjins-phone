@@ -3,6 +3,7 @@ import { PhoneStore, Canon, seedCanon } from './config';
 import { X, RefreshCw, Send, CheckCircle2, Trash2, Edit2, Check, Image as ImageIcon } from 'lucide-react';
 import { useGetStoryProviders, useGenerateStoryActivity, useGenerateStoryImage } from '@workspace/api-client-react';
 import type { ReviewProposal } from './publishActivity';
+import { ImagePicker } from './InstagramImagePicker';
 
 export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: PhoneStore; setStore: React.Dispatch<React.SetStateAction<PhoneStore>>; onPublish: (items: ReviewProposal[]) => void; onClose: () => void }) {
   const [tab, setTab] = useState<'update' | 'proposals' | 'canon'>('update');
@@ -27,6 +28,8 @@ export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: Pho
   const [editContext, setEditContext] = useState('');
   const [editTimestamp, setEditTimestamp] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [pickingStoryId, setPickingStoryId] = useState<string | null>(null);
+  const [pendingPublicationIds, setPendingPublicationIds] = useState<string[] | null>(null);
   const imageError = (error: unknown) => {
     const response = error && typeof error === 'object' && 'response' in error ? (error as { response?: { data?: { error?: string } } }).response : undefined;
     return response?.data?.error || (error instanceof Error ? error.message : String(error));
@@ -44,7 +47,9 @@ export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: Pho
     const summary = {
       recentMessages: store.messages.slice(0,3).map(m => ({ to: m.person, text: m.messages[m.messages.length-1]?.text })),
       recentDiary: store.diary.slice(0,1),
-      recentEvents: store.events.slice(0,2)
+      recentEvents: store.events.slice(0,2),
+      instagramProfile: { username: store.instagramProfile?.username || 'hyune.studio' },
+      contacts: store.contacts.map(c => ({ id: c.id, name: c.name })),
     };
 
     generateActivity.mutate({
@@ -66,15 +71,16 @@ export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: Pho
     });
   };
 
-  const publishApproved = async (single?: ReviewProposal) => {
+  const isImageNeeded = (item: ReviewProposal) =>
+    item.app === 'instagram' && /story/i.test(item.type) && !item.metadata?.imageId && !item.metadata?.dataUrl;
+
+  const persistApproved = async (items: ReviewProposal[]) => {
     if (publishing.current) return;
-    const items = single ? [single] : proposals.filter(p => approvedIds.has(p.reviewId));
-    if (!items.length) return;
     publishing.current = true;
     setSaveError('');
     try {
       const ready = await Promise.all(items.map(async item => {
-        const dataUrl = item.app === 'gallery' && typeof item.metadata?.dataUrl === 'string' ? item.metadata.dataUrl : '';
+        const dataUrl = (item.app === 'gallery' || (item.app === 'instagram' && /story/i.test(item.type))) && typeof item.metadata?.dataUrl === 'string' ? item.metadata.dataUrl : '';
         if (!dataUrl) return item;
         const upload = await fetch('/api/story/image/upload', {
           method: 'POST', headers: { 'Content-Type': 'application/octet-stream' },
@@ -96,6 +102,39 @@ export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: Pho
       setSaveError(`Could not save generated activity: ${imageError(error)}`);
     } finally {
       publishing.current = false;
+    }
+  };
+
+  const publishApproved = (single?: ReviewProposal) => {
+    if (publishing.current) return;
+    const items = single ? [single] : proposals.filter(p => approvedIds.has(p.reviewId));
+    if (!items.length) return;
+    const needsImage = items.find(isImageNeeded);
+    if (needsImage) {
+      setPendingPublicationIds(items.map(item => item.reviewId));
+      setPickingStoryId(needsImage.reviewId);
+      return;
+    }
+    void persistApproved(items);
+  };
+
+  const selectStoryImage = (result: { imageId?: string; dataUrl?: string; source?: 'gallery' | 'upload' | 'ai-generated' }) => {
+    const updated = proposals.map(item => item.reviewId === pickingStoryId
+      ? { ...item, metadata: { ...item.metadata, imageId: result.imageId, dataUrl: result.dataUrl, imageSource: result.source } }
+      : item);
+    setProposals(updated);
+    if (pendingPublicationIds) {
+      const selected = updated.filter(item => pendingPublicationIds.includes(item.reviewId));
+      const next = selected.find(isImageNeeded);
+      if (next) {
+        setPickingStoryId(next.reviewId);
+        return;
+      }
+      setPendingPublicationIds(null);
+      setPickingStoryId(null);
+      void persistApproved(selected);
+    } else {
+      setPickingStoryId(null);
     }
   };
 
@@ -149,6 +188,14 @@ export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: Pho
        e.target.value = '';
      }
   };
+
+  if (pickingStoryId) {
+    const proposal = proposals.find(item => item.reviewId === pickingStoryId);
+    return <div className="fixed inset-0 z-50 bg-[#251e2b]">
+      <ImagePicker key={pickingStoryId} store={store} commit={setStore} initialPrompt={typeof proposal?.metadata?.imagePrompt === 'string' ? proposal.metadata.imagePrompt : ''} onSelect={selectStoryImage} onCancel={() => { setPickingStoryId(null); setPendingPublicationIds(null); }} />
+      <p className="pointer-events-none absolute bottom-3 left-4 right-4 text-center text-[10px] text-white/50">Choose an image to finish this Story. Back keeps it in review.</p>
+    </div>;
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-[#12111d] text-[#f2ece5]">
@@ -307,7 +354,10 @@ export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: Pho
                             ) : (
                                 <><h4 className="mb-1 font-medium">{p.title} {p.person && <span className="text-white/50 text-xs">· with {p.person}</span>}</h4><p className="text-sm text-white/70">{p.content}</p>{p.app === 'instagram' && /story/i.test(p.type) && <p className="mt-2 text-xs text-white/45">Image prompt: {p.metadata?.imagePrompt || 'not provided'} · {p.metadata?.audience || 'public'} · {p.timestamp}{!p.metadata?.imageId && !p.metadata?.dataUrl && ' · Image needed after approval'}</p>}</>
                             )}
-                             {!isEditing && <button onClick={() => publishApproved(p)} className="mt-3 text-xs text-[#e7aabb]">Accept this item</button>}
+                             {!isEditing && <>
+                               {p.app === 'instagram' && /story/i.test(p.type) && <button onClick={() => setPickingStoryId(p.reviewId)} className="mr-4 mt-3 text-xs text-[#e7aabb]">{isImageNeeded(p) ? 'Choose / Upload / Generate Image' : 'Change Story Image'}</button>}
+                               <button onClick={() => publishApproved(p)} className="mt-3 text-xs text-[#e7aabb]">Accept this item</button>
+                             </>}
                           </div>
                         );
                       })}

@@ -7,6 +7,30 @@ export type ReviewProposal = ActivityProposal & { reviewId: string };
 const text = (value: unknown): string => typeof value === 'string' ? value.trim() : '';
 const meta = (proposal: ReviewProposal, key: string): string => text(proposal.metadata?.[key]);
 const subtype = (proposal: ReviewProposal) => proposal.type.toLowerCase().replace(/[\s_-]+/g, ' ');
+const isRetiredStoryAccount = (name: string) => /^(mar|mira|antonella)(?:\s|$)/i.test(name.trim());
+
+function resolveStoryAccount(store: PhoneStore, person: string): { user: string; contactId?: string } {
+  const account = person.trim();
+  const normalized = account.toLowerCase();
+  if (isRetiredStoryAccount(account)) {
+    throw new Error(`Cannot publish Story: "${account}" is a retired Story account.`);
+  }
+  const profile = store.instagramProfile;
+  if (!account ||
+      account.toLowerCase() === (profile?.username || 'hyune.studio').toLowerCase() ||
+      account.toLowerCase() === (profile?.displayName || 'Hyunjin').toLowerCase() ||
+      account.toLowerCase() === 'hyunjin') {
+    return { user: profile?.username || 'hyune.studio' };
+  }
+  const contact = store.contacts.find(candidate =>
+    candidate.id.toLowerCase() === normalized ||
+    candidate.name.toLowerCase() === normalized,
+  );
+  if (!contact) {
+    throw new Error(`Cannot publish Story: "${account}" is not an existing Contact.`);
+  }
+  return { user: contact.name, contactId: contact.id };
+}
 
 export function publishActivity(store: PhoneStore, proposals: ReviewProposal[]): PhoneStore {
   let next: PhoneStore = structuredClone(store);
@@ -71,8 +95,16 @@ export function publishActivity(store: PhoneStore, proposals: ReviewProposal[]):
         // Proposals describe a story; image generation is a separate user choice.
         // Never turn an image prompt into a caption or silently create a contact.
         if (type.includes('story')) {
-          next.instagramStories.unshift({
-            id, user: person || next.instagramProfile?.username || 'hyune.studio', caption: content, time,
+          const account = resolveStoryAccount(next, person);
+          const parsedDate = Date.parse(time);
+          const storyDate = meta(p, 'date') || (Number.isFinite(parsedDate) ? new Date(parsedDate).toISOString().slice(0, 10) : undefined);
+          const storyTime = meta(p, 'time') || time.match(/(?:T|[ ,])(\d{1,2}:\d{2})/)?.[1] || time;
+          const story = {
+            id, user: account.user, contactId: account.contactId, caption: content, time: storyTime,
+            date: storyDate,
+            createdAt: meta(p, 'createdAt') || new Date().toISOString(),
+            expiresAt: meta(p, 'expiresAt') || undefined,
+            viewed: meta(p, 'viewed') === 'true',
             imageId: meta(p, 'imageId') || undefined, dataUrl: meta(p, 'dataUrl') || undefined,
             imagePrompt: meta(p, 'imagePrompt') || undefined,
             audience: meta(p, 'audience') === 'close-friends' ? 'close-friends' : 'public',
@@ -81,7 +113,8 @@ export function publishActivity(store: PhoneStore, proposals: ReviewProposal[]):
               ? p.metadata.taggedContactIds.filter((value): value is string => typeof value === 'string' && next.contacts.some(c => c.id === value))
               : [],
             source: 'ai-generated',
-          });
+          } as any;
+          next.instagramStories.unshift(story);
         } else {
           next.posts.unshift({
             id, user: person || next.instagramProfile?.username || 'hyune.studio', caption: content, time, tone: 'rose', likes: 0,

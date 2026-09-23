@@ -18,6 +18,7 @@ const router: IRouter = Router();
 
 const baseUrl = process.env["AI_INTEGRATIONS_OPENAI_BASE_URL"]?.replace(/\/$/, "");
 const apiKey = process.env["AI_INTEGRATIONS_OPENAI_API_KEY"];
+const isRetiredStoryAccount = (name: string) => /^(mar|mira|antonella)(?:\s|$)/i.test(name.trim());
 
 function providerReady() {
   return Boolean(baseUrl && apiKey);
@@ -29,6 +30,19 @@ function parseJsonObject(value: string): unknown {
     .replace(/^```(?:json)?\s*/i, "")
     .replace(/\s*```$/, "");
   return JSON.parse(cleaned);
+}
+
+function storyAccounts(existingPhone: unknown): string[] {
+  const phone = existingPhone && typeof existingPhone === "object" ? existingPhone as { instagramProfile?: { username?: unknown }; contacts?: unknown } : {};
+  const profileName = typeof phone.instagramProfile?.username === "string" ? phone.instagramProfile.username : "hyune.studio";
+  const contacts = Array.isArray(phone.contacts)
+    ? phone.contacts.flatMap(contact => {
+        if (!contact || typeof contact !== "object") return [];
+        const name = (contact as { name?: unknown }).name;
+        return typeof name === "string" && name.trim() && !isRetiredStoryAccount(name) ? [name.trim()] : [];
+      })
+    : [];
+  return [...new Set([profileName, ...contacts].filter(account => !isRetiredStoryAccount(account)))];
 }
 
 router.get("/story/providers", (_req, res) => {
@@ -59,13 +73,14 @@ router.post("/story/generate", async (req, res) => {
       ? "You may invent only small mundane connective details. Never invent travel, death, pregnancy, marriage, breakup, major fights, career changes, relationship changes, or important confessions unless explicitly present."
       : "Do not invent major canon events or the contents of important conversations that were not provided.";
 
-  const system = `You generate fictional roleplay smartphone activity for a character named Hyunjin. Everything is fictional. Return strict JSON only.
+    const allowedStoryAccounts = storyAccounts(input.data.existingPhone);
+    const system = `You generate fictional roleplay smartphone activity for a character named Hyunjin. Everything is fictional. Return strict JSON only.
 
 User-written canon always overrides generated material. Never contradict canon. ${safetyRule}
 Hyunjin must feel like a whole person: balance romantic life with friends, art, music, work, Seoul, humor, routines, and private observations.
 Generate only the few app traces that logically follow. Do not create something for every app.
 Only propose a Voice Memo when the update naturally suggests something he would record privately. For app "voice", put the transcript in "content" and metadata with "language" (English, Korean, or Mixed), "context", "delivery", "category", and optional "relatedEvent". Include the date and time in "timestamp". Do not generate audio here.
-For an Instagram story proposal, use app "instagram" and type "story". The "content" key is required by the JSON contract: set it to a short Story caption or an empty string when no caption is wanted. Put the separate visual description for a later manual image choice in metadata.imagePrompt, set metadata.audience to "public" or "close-friends", and include metadata.context (such as the situation or location). Include the date and time in "timestamp". Do not generate an image or call image generation for this proposal; image generation happens only after the user manually chooses it.
+For an Instagram story proposal, use app "instagram" and type "story" only when a Story is naturally grounded in the supplied current Canon and Story Update context. Do not invent a major event merely to create a Story. The "person" must be "hyune.studio" (the self account) or exactly one of these existing Contact names: ${allowedStoryAccounts.slice(1).join(", ") || "(none)"}. Never invent an account, rename a Contact, or create a new Contact. The "content" key is required by the JSON contract: set it to a short optional Story caption or an empty string when no caption is wanted. Put the separate visual description for a later manual image choice in metadata.imagePrompt (never copy the image prompt into content), set metadata.audience to "public" or "close-friends", and include metadata.context (such as the situation or location). Include the date and time in "timestamp". Do not generate an image or call image generation for this proposal; image generation happens only after the user manually chooses it.
 Do not create or modify old contact cards from story updates. Only propose a new contact when the update explicitly introduces that person as a new contact.
 
 Return:
@@ -121,7 +136,18 @@ Keep proposals concise and reviewable. For calls, record only that a call occurr
     };
     const content = payload.choices?.[0]?.message?.content;
     if (!content) throw new Error("Provider returned no story content");
-    res.json(GenerateStoryActivityResponse.parse(parseJsonObject(content)));
+     const parsed = GenerateStoryActivityResponse.parse(parseJsonObject(content));
+     const invalidStory = parsed.proposals.find(proposal =>
+       proposal.app === "instagram" &&
+       proposal.type.toLowerCase().replace(/[\s_-]+/g, " ").includes("story") &&
+       typeof proposal.person === "string" &&
+       proposal.person.trim() !== "" &&
+       !allowedStoryAccounts.some(account => account.toLowerCase() === proposal.person!.trim().toLowerCase()),
+     );
+     if (invalidStory) {
+       throw new Error(`Story proposal names an account that is not an existing Contact: ${invalidStory.person}`);
+     }
+     res.json(parsed);
   } catch (error) {
     req.log.error({ err: error }, "Unable to generate story activity");
     res.status(503).json({ error: "The proposed activity could not be generated." });

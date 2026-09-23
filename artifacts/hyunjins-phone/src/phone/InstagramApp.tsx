@@ -5,6 +5,8 @@ import { ImagePicker } from './InstagramImagePicker';
 import { StoryViewer } from './InstagramStoryViewer';
 import { ProfileEditor, PostEditor, StoryEditor } from './InstagramEditors';
 import { HighlightViewer } from './InstagramHighlightViewer';
+import { InstagramStoryManagement } from './InstagramStoryManagement';
+import { activeStoryGroups } from './InstagramStoryUtils';
 
 type Detail = { kind: string; id: string } | null;
 
@@ -145,6 +147,8 @@ function PostCard({ post, store, onClick, large, onLike, onSave, onCommentClick,
 export function InstagramApp({ store, detail, setDetail, editMode, commit }: Props) {
   const profile = store.instagramProfile || defaultProfile;
   const highlights = store.instagramHighlights || defaultHighlights;
+  const storyGroups = activeStoryGroups(store);
+  const storySequence = storyGroups.flatMap(group => group.stories);
 
   const [newComment, setNewComment] = useState('');
 
@@ -157,39 +161,46 @@ export function InstagramApp({ store, detail, setDetail, editMode, commit }: Pro
   }
 
   if (detail?.kind === 'create-story' || detail?.kind === 'edit-story') {
-    return <StoryEditor store={store} storyId={detail.id || undefined} onClose={() => setDetail(null)} commit={commit} />;
+    return <StoryEditor store={store} storyId={detail.id || undefined} onClose={() => setDetail(null)} commit={commit} editMode={editMode} />;
+  }
+
+  if (detail?.kind === 'manage-stories' && editMode) {
+    return <InstagramStoryManagement store={store} onClose={() => setDetail(null)} onEdit={id => setDetail({ kind: 'edit-story', id })} onNew={() => setDetail({ kind: 'create-story', id: '' })} commit={commit} />;
   }
 
   if (detail?.kind === 'ig-tab') {
     const highlight = highlights.find(h => h.id === detail.id);
     if (highlight) {
-      return <HighlightViewer store={store} highlight={highlight} onClose={() => setDetail(null)} editMode={editMode} commit={commit} />;
+      return <HighlightViewer store={store} highlight={highlight} onClose={() => setDetail(null)} onEditStory={id => setDetail({ kind: 'edit-story', id })} editMode={editMode} commit={commit} />;
     }
   }
 
   if (detail?.kind === 'story') {
-    const storyIndex = store.instagramStories.findIndex(s => s.id === detail.id);
+    const storyIndex = storySequence.findIndex(s => s.id === detail.id);
     if (storyIndex >= 0) {
+      const currentStory = storySequence[storyIndex];
+      const currentGroup = storyGroups.find(group => group.stories.some(story => story.id === currentStory.id));
       return (
         <StoryViewer
-          story={store.instagramStories[storyIndex]}
+          story={currentStory}
           store={store}
+          sequence={currentGroup?.stories || [currentStory]}
           onClose={() => setDetail(null)}
           onNext={() => {
-            if (storyIndex < store.instagramStories.length - 1) {
-              setDetail({ kind: 'story', id: store.instagramStories[storyIndex + 1].id });
+            if (storyIndex < storySequence.length - 1) {
+              setDetail({ kind: 'story', id: storySequence[storyIndex + 1].id });
             } else {
               setDetail(null);
             }
           }}
           onPrev={() => {
             if (storyIndex > 0) {
-              setDetail({ kind: 'story', id: store.instagramStories[storyIndex - 1].id });
+              setDetail({ kind: 'story', id: storySequence[storyIndex - 1].id });
             } else {
               setDetail(null);
             }
           }}
-          onEdit={() => setDetail({ kind: 'edit-story', id: store.instagramStories[storyIndex].id })}
+          onEdit={() => setDetail({ kind: 'edit-story', id: currentStory.id })}
           editMode={editMode}
           commit={commit}
         />
@@ -316,7 +327,13 @@ export function InstagramApp({ store, detail, setDetail, editMode, commit }: Pro
         )}
       </div>
 
-      <SectionTitle action={editMode ? "+ story" : undefined} onAction={() => setDetail({ kind: 'create-story', id: '' })}>stories · today</SectionTitle>
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="text-[10px] uppercase tracking-[.23em] text-white/45">stories · today</h3>
+        {editMode && <div className="flex gap-4">
+          <button onClick={() => setDetail({ kind: 'manage-stories', id: '' })} className="text-xs text-[#e7aabb]" data-testid="button-instagram-manage-stories">manage</button>
+          <button onClick={() => setDetail({ kind: 'create-story', id: '' })} className="text-xs text-[#e7aabb]">+ story</button>
+        </div>}
+      </div>
       <div className="mb-7 flex gap-3 overflow-x-auto">
         <button onClick={() => setDetail({ kind: 'create-story', id: '' })} className="shrink-0 text-center" data-testid="button-story-you">
           <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border-2 border-white/20 bg-white/5 transition-transform active:scale-95">
@@ -327,23 +344,17 @@ export function InstagramApp({ store, detail, setDetail, editMode, commit }: Pro
           <span className="mt-1.5 block text-[10px] text-white/55">you</span>
         </button>
 
-        {store.instagramStories.map((s, i) => {
-          const hasImage = !!(s.imageId || s.dataUrl);
+        {storyGroups.map(({ account, stories }) => {
+          const first = stories.find(story => !story.viewed) || stories[0];
+          const hasUnviewed = stories.some(story => !story.viewed);
           return (
-            <button key={s.id} onClick={() => setDetail({ kind: 'story', id: s.id })} className="shrink-0 text-center" data-testid={`button-story-${s.id}`}>
-              <span className={`mx-auto flex h-14 w-14 items-center justify-center rounded-full border-2 transition-transform active:scale-95 ${hasImage ? 'border-[#d98ca7] p-0.5' : 'border-dashed border-white/30 p-0.5'}`}>
-                {hasImage ? (
-                  <span className="flex h-full w-full items-center justify-center rounded-full bg-black overflow-hidden">
-                    <img src={s.imageId ? `/api/story/image/${s.imageId}` : s.dataUrl} className="h-full w-full object-cover" />
-                  </span>
-                ) : (
-                  <span className="flex h-full w-full items-center justify-center rounded-full bg-white/5 text-xs text-white/45">
-                    {s.user.substring(0, 1).toUpperCase()}
-                  </span>
-                )}
+            <button key={account.key} onClick={() => setDetail({ kind: 'story', id: first.id })} className="shrink-0 text-center" data-testid={`button-story-${first.id}`}>
+              <span className={`mx-auto flex h-14 w-14 items-center justify-center rounded-full border-2 p-0.5 transition-transform active:scale-95 ${hasUnviewed ? 'border-[#d98ca7]' : 'border-white/20'}`}>
+                <span className="flex h-full w-full items-center justify-center rounded-full bg-black overflow-hidden">
+                  {account.avatarUrl ? <img src={account.avatarUrl} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-center justify-center text-xs font-medium text-[#251e2b]" style={{ background: account.color }}>{account.initials}</span>}
+                </span>
               </span>
-              <span className="mt-1.5 block text-[10px] text-white/55">{s.user}</span>
-              {!hasImage && <span className="block text-[9px] text-[#e7aabb]">image needed</span>}
+              <span className="mt-1.5 block max-w-[70px] truncate text-[10px] text-white/55">{account.name}</span>
             </button>
           );
         })}

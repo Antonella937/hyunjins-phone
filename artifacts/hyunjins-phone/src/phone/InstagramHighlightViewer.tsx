@@ -3,7 +3,7 @@ import { ArrowLeft, Trash2, Plus, X } from 'lucide-react';
 import type { PhoneStore, InstagramHighlight } from './config';
 import { StoryViewer } from './InstagramStoryViewer';
 
-export function HighlightViewer({ store, highlight, onClose, editMode, commit }: { store: PhoneStore; highlight: InstagramHighlight; onClose: () => void; editMode: boolean; commit: any }) {
+export function HighlightViewer({ store, highlight, onClose, onEditStory, editMode, commit }: { store: PhoneStore; highlight: InstagramHighlight; onClose: () => void; onEditStory: (id: string) => void; editMode: boolean; commit: any }) {
   const [viewingStoryId, setViewingStoryId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(highlight.name);
@@ -40,22 +40,27 @@ export function HighlightViewer({ store, highlight, onClose, editMode, commit }:
   if (viewingStoryId) {
     const sIdx = store.instagramStories.findIndex(s => s.id === viewingStoryId);
     if (sIdx >= 0) {
+      const sequence = highlight.storyIds.flatMap(id => {
+        const story = store.instagramStories.find(item => item.id === id);
+        return story ? [story] : [];
+      });
       return <StoryViewer
         story={store.instagramStories[sIdx]}
         store={store}
+        sequence={sequence}
         onClose={() => setViewingStoryId(null)}
         onNext={() => {
-          const idx = highlight.storyIds.indexOf(viewingStoryId);
-          if (idx >= 0 && idx < highlight.storyIds.length - 1) setViewingStoryId(highlight.storyIds[idx + 1]);
+          const idx = sequence.findIndex(item => item.id === viewingStoryId);
+          if (idx >= 0 && idx < sequence.length - 1) setViewingStoryId(sequence[idx + 1].id);
           else setViewingStoryId(null);
         }}
         onPrev={() => {
-          const idx = highlight.storyIds.indexOf(viewingStoryId);
-          if (idx > 0) setViewingStoryId(highlight.storyIds[idx - 1]);
+          const idx = sequence.findIndex(item => item.id === viewingStoryId);
+          if (idx > 0) setViewingStoryId(sequence[idx - 1].id);
           else setViewingStoryId(null);
         }}
-        onEdit={() => {}} // Can't easily edit from highlight viewer, or maybe we can? The brief says "Edit Story (navigate callback)". Since it's viewing from highlight, just close viewer.
-        editMode={false} // Editing stories inside highlights might be confusing, keep false or pass a callback.
+        onEdit={() => { setViewingStoryId(null); onEditStory(viewingStoryId); }}
+        editMode={editMode}
         commit={commit}
       />;
     }

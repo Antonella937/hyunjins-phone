@@ -1,0 +1,290 @@
+Upgrade the EXISTING Instagram Stories system. Keep the current Instagram design exactly as it is. Do not redesign the page, colors, typography, Story circles, profile or feed.
+
+CURRENT PROBLEM:
+
+The Story circles at the top of Instagram currently appear to be decorative/static.
+
+They currently show:
+
+* you
+* mar
+* mira
+* antonella
+
+I want Stories to contain REAL images that can be opened, viewed, added, generated, edited and deleted.
+
+I also want the outdated fictional Story contacts replaced with the established contacts from the current Canon.
+
+STORY CONTACTS
+
+Remove these Story identities from the current active Stories system:
+
+* Mar
+* Mira
+* Antonella
+
+Do not delete unrelated historical data elsewhere in the phone.
+
+Use these established contacts for Instagram Stories:
+
+* Nela
+* Bang Chan
+* Lee Know
+* Changbin
+* Han
+* Felix
+* Seungmin
+* I.N
+
+Keep:
+
+* You / hyune.studio
+
+“Antonella” and “Nela” refer to the same existing person/contact. Use the current display name “Nela” throughout Instagram going forward. Do NOT create a second Antonella/Nela contact.
+
+Do not automatically create active Stories for every contact. The Story row should display only accounts that currently have active Story content.
+
+REAL STORY IMAGES
+
+Every Instagram Story must support an actual persistent image.
+
+A Story record should support:
+
+* id
+* contact/account
+* image
+* date
+* time
+* caption/text
+* audience
+* viewed/unviewed
+* source
+* createdAt
+
+Do not display a Story as though it contains media if it only has a text description or image prompt.
+
+OPEN STORIES
+
+Make every Story circle tappable.
+
+When I tap a Story circle, open a full-screen Instagram-style Story viewer displaying the REAL stored image.
+
+Include:
+
+* account/contact name
+* contact avatar
+* timestamp
+* actual Story image
+* optional Story text
+* progress bar
+* tap right → next Story
+* tap left → previous Story
+* close button
+* swipe/gesture navigation where supported
+
+If one account has multiple Stories, play them sequentially before moving to the next account.
+
+STORY IMAGES
+
+When creating or editing a Story, provide:
+
+📷 Choose from Gallery
+⬆️ Upload from Phone
+✨ Generate Image with AI
+
+CHOOSE FROM GALLERY
+
+Open the existing Living Phone Gallery and allow me to select one of its actual stored images.
+
+Reference the existing Gallery asset instead of unnecessarily duplicating the file.
+
+UPLOAD FROM PHONE
+
+Open the iPhone photo picker.
+
+Persist the uploaded image using the same persistent image storage already used by Gallery.
+
+GENERATE IMAGE WITH AI
+
+Open an image prompt field.
+
+Generate a REAL image using the existing image-generation system.
+
+After generation show:
+
+Preview
+
+Use Image
+Regenerate
+Cancel
+
+Do not automatically publish the generated image.
+
+Do NOT use the image-generation prompt as the Story caption.
+
+If AI image generation fails because of quota or provider limits, display the actual error instead of creating a fake Story image.
+
+EDIT EXISTING STORY
+
+When Edit Mode is ON, tapping/opening a Story must provide:
+
+Edit Story
+Replace Image
+Choose from Gallery
+Upload from Phone
+Generate Image with AI
+Edit Story Text
+Change Date/Time
+Change Audience
+Change Contact/Account
+Delete Story
+
+Saving must update the existing Story record rather than creating a duplicate.
+
+CREATE STORIES MANUALLY
+
+Make the existing “+ / you” circle functional.
+
+When tapped, offer:
+
+Choose from Gallery
+Upload Photo
+Generate Image with AI
+
+Then allow me to preview and save the Story.
+
+EDIT MODE — STORY CONTACT
+
+In Edit Mode, allow me to choose which existing Contact/account posted the Story.
+
+The selector should use the existing Contacts database.
+
+Do NOT maintain a separate hardcoded Instagram contact list.
+
+This means if a Contact is renamed in Contacts, Instagram should automatically display the updated name.
+
+For example:
+
+Antonella → renamed to Nela in Contacts
+
+Instagram Stories should automatically show:
+Nela
+
+instead of:
+Antonella
+
+STORY AVATARS
+
+Allow each Story account/contact to use its existing Contact Photo as the Story avatar.
+
+If no Contact Photo exists, keep the current initial-based placeholder.
+
+ACTIVE STORY BEHAVIOR
+
+Unviewed Story:
+pink Story ring
+
+Viewed Story:
+subtle/dim Story ring
+
+No active Story:
+do not display that contact in the active Stories row.
+
+Allow Story expiration metadata, but do NOT permanently delete historical Story records solely because they are no longer active.
+
+EDIT MODE MANAGEMENT
+
+Add an Instagram → Stories management view available in Edit Mode.
+
+Show all existing Stories with:
+
+thumbnail
+account
+date/time
+active/expired
+Edit
+Delete
+
+Also provide:
+
+* New Story
+
+This will let me manually build Stories for Hyunjin and the other established contacts.
+
+STORY UPDATE / GENERATE DAY
+
+Allow Generate Day to propose Stories for:
+
+Hyunjin / hyune.studio
+Nela
+Bang Chan
+Lee Know
+Changbin
+Han
+Felix
+Seungmin
+I.N
+
+ONLY when the generated Story makes sense based on current Canon and Story Update context.
+
+Do not invent major events merely to create Story content.
+
+AI-generated Story proposals should first generate:
+
+* account/contact
+* context
+* optional caption
+* image-generation prompt
+* date/time
+
+After approval, let me:
+
+Choose Existing Image
+Upload Image
+Generate Image
+
+Do not pretend the Story contains a photo until an actual image exists.
+
+PERSISTENCE
+
+Story images and metadata must persist after:
+
+* navigating away
+* refreshing
+* closing the installed PWA
+* reopening the installed PWA
+
+Reuse the existing Contacts, Gallery, image storage, AI image generator and persistent database.
+
+Do not create duplicate storage systems.
+
+IMPORTANT DATA SAFETY
+
+Do NOT reset the database.
+Do NOT delete existing Gallery photos.
+Do NOT delete existing Instagram posts.
+Do NOT modify Canon.
+Do NOT recreate deleted contacts.
+
+TEST BEFORE REPORTING SUCCESS
+
+Test:
+
+1. Create a Story for hyune.studio using an existing Gallery image.
+2. Save it.
+3. Verify the Story circle appears.
+4. Tap the circle.
+5. Verify the REAL image opens full-screen.
+6. Close it.
+7. Create a Story assigned to Felix using an uploaded image.
+8. Verify Felix appears in the Story row.
+9. Tap Felix.
+10. Verify his actual Story image opens.
+11. Edit that Story and replace its image.
+12. Save.
+13. Refresh the PWA.
+14. Verify both Stories and their images still work.
+
+Do not consider Stories complete merely because Story circles render.
+
+Stories are only functional when tapping a circle opens the actual persistent Story media.

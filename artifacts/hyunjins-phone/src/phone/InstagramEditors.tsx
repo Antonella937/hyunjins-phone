@@ -2,6 +2,14 @@ import React, { useState } from 'react';
 import { ArrowLeft, Trash2, Camera, X } from 'lucide-react';
 import type { PhoneStore, Post, InstagramProfile, InstagramStory, Contact } from './config';
 import { ImagePicker } from './InstagramImagePicker';
+import { isRetiredStoryContact } from './InstagramStoryUtils';
+
+function localDateTime(value?: string): string {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
+}
 
 export function ProfileEditor({ store, onClose, commit }: { store: PhoneStore; onClose: () => void; commit: any }) {
   const [profile, setProfile] = useState<InstagramProfile>(store.instagramProfile || {
@@ -14,7 +22,7 @@ export function ProfileEditor({ store, onClose, commit }: { store: PhoneStore; o
     onClose();
   };
 
-  if (pickingImage) return <ImagePicker store={store} onSelect={(res) => { setProfile({ ...profile, photoDataUrl: res.dataUrl, imageId: res.imageId }); setPickingImage(false); }} onCancel={() => setPickingImage(false)} />;
+  if (pickingImage) return <ImagePicker store={store} commit={commit} onSelect={(res) => { setProfile({ ...profile, photoDataUrl: res.dataUrl, imageId: res.imageId }); setPickingImage(false); }} onCancel={() => setPickingImage(false)} />;
 
   return (
     <div className="flex h-full flex-col">
@@ -71,7 +79,7 @@ export function PostEditor({ store, postId, onClose, commit }: { store: PhoneSto
     setDraft({ ...draft, taggedContactIds: tags.includes(cId) ? tags.filter(id => id !== cId) : [...tags, cId] });
   };
 
-  if (pickingImage) return <ImagePicker store={store} onSelect={(res) => { setDraft({ ...draft, imageId: res.imageId, dataUrl: res.dataUrl }); setPickingImage(false); }} onCancel={() => { if (!draft.imageId && !draft.dataUrl && !existing) onClose(); else setPickingImage(false); }} />;
+  if (pickingImage) return <ImagePicker store={store} commit={commit} onSelect={(res) => { setDraft({ ...draft, imageId: res.imageId, dataUrl: res.dataUrl }); setPickingImage(false); }} onCancel={() => { if (!draft.imageId && !draft.dataUrl && !existing) onClose(); else setPickingImage(false); }} />;
 
   if (previewing) return <div className="space-y-4 px-4 pt-4">
     <button onClick={() => setPreviewing(false)} className="flex items-center gap-2 text-sm text-[#e7aabb]"><ArrowLeft size={16} /> Edit Post</button>
@@ -168,10 +176,10 @@ export function PostEditor({ store, postId, onClose, commit }: { store: PhoneSto
   );
 }
 
-export function StoryEditor({ store, storyId, onClose, commit }: { store: PhoneStore; storyId?: string; onClose: () => void; commit: any }) {
+export function StoryEditor({ store, storyId, onClose, commit, editMode }: { store: PhoneStore; storyId?: string; onClose: () => void; commit: any; editMode: boolean }) {
   const existing = storyId ? store.instagramStories.find(p => p.id === storyId) : undefined;
   const [draft, setDraft] = useState<Partial<InstagramStory>>(existing ? JSON.parse(JSON.stringify(existing)) : {
-    id: `s-${Date.now()}`, user: store.instagramProfile?.username || 'hyune.studio', caption: '', time: 'just now', audience: 'public'
+    id: `s-${Date.now()}`, user: store.instagramProfile?.username || 'hyune.studio', caption: '', date: localDateTime(new Date().toISOString()).slice(0, 10), time: 'just now', audience: 'public', createdAt: new Date().toISOString(), viewed: false, source: 'manual'
   });
   const [pickingImage, setPickingImage] = useState(!existing?.dataUrl && !existing?.imageId);
   const [error, setError] = useState('');
@@ -181,9 +189,19 @@ export function StoryEditor({ store, storyId, onClose, commit }: { store: PhoneS
       setError('An image is required for stories.');
       return;
     }
+    const contact = draft.contactId ? store.contacts.find(c => c.id === draft.contactId) : undefined;
+    if (draft.contactId && !contact) {
+      setError('This contact no longer exists. Choose an existing contact.');
+      return;
+    }
     try {
       commit((s: PhoneStore) => {
-        const stories = existing ? s.instagramStories.map(p => p.id === draft.id ? (draft as InstagramStory) : p) : [draft as InstagramStory, ...s.instagramStories];
+        const updated = {
+          ...draft,
+          user: contact?.name || draft.user || s.instagramProfile.username,
+          createdAt: draft.createdAt || new Date().toISOString(),
+        } as InstagramStory;
+        const stories = existing ? s.instagramStories.map(p => p.id === draft.id ? updated : p) : [updated, ...s.instagramStories];
         return { ...s, instagramStories: stories };
       });
       onClose();
@@ -197,7 +215,7 @@ export function StoryEditor({ store, storyId, onClose, commit }: { store: PhoneS
     setDraft({ ...draft, taggedContactIds: tags.includes(cId) ? tags.filter(id => id !== cId) : [...tags, cId] });
   };
 
-  if (pickingImage) return <ImagePicker store={store} onSelect={(res) => { setDraft({ ...draft, imageId: res.imageId, dataUrl: res.dataUrl }); setPickingImage(false); setError(''); }} onCancel={() => { if (!draft.imageId && !draft.dataUrl && !existing) onClose(); else setPickingImage(false); }} />;
+  if (pickingImage) return <ImagePicker store={store} commit={commit} initialTab={existing && !draft.imageId && !draft.dataUrl && draft.imagePrompt ? 'ai' : 'gallery'} initialPrompt={draft.imagePrompt || ''} onSelect={(res) => { setDraft({ ...draft, imageId: res.imageId, dataUrl: res.dataUrl, source: res.source || draft.source }); setPickingImage(false); setError(''); }} onCancel={() => { if (!draft.imageId && !draft.dataUrl && !existing) onClose(); else setPickingImage(false); }} />;
 
   return (
     <div className="flex h-full flex-col">
@@ -225,16 +243,28 @@ export function StoryEditor({ store, storyId, onClose, commit }: { store: PhoneS
         )}
       </div>
       <div className="space-y-4 px-4 flex-1 overflow-y-auto pb-6">
-        <div><label className="mb-1 block text-[10px] uppercase text-white/50">Account / Story owner</label><input value={draft.user || ''} onChange={e => setDraft({ ...draft, user: e.target.value })} className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white outline-none focus:border-[#d98ca7]" /></div>
-        <div><label className="mb-1 block text-[10px] uppercase text-white/50">Relink to existing contact</label><select value="" onChange={e => { const contact = store.contacts.find(c => c.id === e.target.value); if (contact) setDraft({ ...draft, user: contact.name, taggedContactIds: [...new Set([...(draft.taggedContactIds || []), contact.id])] }); }} className="w-full rounded-xl border border-white/10 bg-[#251e2b] p-3 text-sm text-white"><option value="">Choose a contact…</option>{store.contacts.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
+        {editMode && <div><label className="mb-1 block text-[10px] uppercase text-white/50">Story account</label>
+          <select value={draft.contactId || (existing && !['hyune.studio', 'hyunjin', store.instagramProfile?.username].includes(draft.user || '') ? 'legacy' : 'self')} onChange={e => { const contact = store.contacts.find(c => c.id === e.target.value); setDraft({ ...draft, contactId: contact?.id, user: contact?.name || store.instagramProfile?.username || 'hyune.studio' }); }} className="w-full rounded-xl border border-white/10 bg-[#251e2b] p-3 text-sm text-white">
+            {existing && !draft.contactId && !['hyune.studio', 'hyunjin', store.instagramProfile?.username].includes(draft.user || '') && <option value="legacy">Original account: {draft.user}</option>}
+            <option value="self">You / {store.instagramProfile?.username || 'hyune.studio'}</option>
+            {store.contacts.filter(c => !isRetiredStoryContact(c.name)).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+          <p className="mt-1 text-[10px] text-white/40">Accounts follow names and photos in Contacts. No new contact is created.</p>
+        </div>}
         <div><label className="mb-1 block text-[10px] uppercase text-white/50">Caption (optional)</label><input value={draft.caption} onChange={e => setDraft({...draft, caption: e.target.value})} className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white outline-none focus:border-[#d98ca7]" /></div>
         
         <div className="flex gap-4">
           <div className="flex-1"><label className="mb-1 block text-[10px] uppercase text-white/50">Location</label><input value={draft.location || ''} onChange={e => setDraft({...draft, location: e.target.value})} className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white outline-none focus:border-[#d98ca7]" /></div>
-          <div className="flex-1"><label className="mb-1 block text-[10px] uppercase text-white/50">Date/Time</label><input value={draft.time} onChange={e => setDraft({...draft, time: e.target.value})} className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white outline-none focus:border-[#d98ca7]" /></div>
+          <div className="flex-1"><label className="mb-1 block text-[10px] uppercase text-white/50">Date</label><input type="date" value={draft.date || ''} onChange={e => setDraft({...draft, date: e.target.value})} className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white outline-none focus:border-[#d98ca7]" /></div>
         </div>
+        <div><label className="mb-1 block text-[10px] uppercase text-white/50">Time</label><input value={draft.time || ''} onChange={e => setDraft({...draft, time: e.target.value})} placeholder="just now or 18:30" className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white outline-none focus:border-[#d98ca7]" /></div>
 
         <div><label className="mb-1 block text-[10px] uppercase text-white/50">Audience</label><select value={draft.audience || 'public'} onChange={e => setDraft({...draft, audience: e.target.value as any})} className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white outline-none focus:border-[#d98ca7] appearance-none"><option value="public">Public</option><option value="close-friends">Close Friends</option></select></div>
+        {editMode && <div>
+          <label className="mb-1 block text-[10px] uppercase text-white/50">Expires (optional)</label>
+          <input type="datetime-local" value={localDateTime(draft.expiresAt)} onChange={e => setDraft({ ...draft, expiresAt: e.target.value ? new Date(e.target.value).toISOString() : undefined })} className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white outline-none focus:border-[#d98ca7]" />
+          <label className="mt-3 flex items-center gap-2 text-xs text-white/60"><input type="checkbox" checked={!!draft.viewed} onChange={e => setDraft({ ...draft, viewed: e.target.checked })} /> Mark as viewed</label>
+        </div>}
 
         <div>
           <label className="mb-1 block text-[10px] uppercase text-white/50">Tagged Contacts</label>
