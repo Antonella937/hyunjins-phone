@@ -1,6 +1,7 @@
 import { Router, type IRouter, raw } from "express";
 import OpenAI from "openai";
 import { loadVoiceAudio, saveVoiceAudio, normalizeWav } from "../lib/voiceAudioStorage";
+import { detectImageType, loadStoryImage, saveStoryImage } from "../lib/imageStorage";
 import {
   GenerateStoryActivityBody,
   GenerateStoryActivityResponse,
@@ -64,6 +65,8 @@ User-written canon always overrides generated material. Never contradict canon. 
 Hyunjin must feel like a whole person: balance romantic life with friends, art, music, work, Seoul, humor, routines, and private observations.
 Generate only the few app traces that logically follow. Do not create something for every app.
 Only propose a Voice Memo when the update naturally suggests something he would record privately. For app "voice", put the transcript in "content" and metadata with "language" (English, Korean, or Mixed), "context", "delivery", "category", and optional "relatedEvent". Include the date and time in "timestamp". Do not generate audio here.
+For an Instagram story proposal, use app "instagram" and type "story". The "content" key is required by the JSON contract: set it to a short Story caption or an empty string when no caption is wanted. Put the separate visual description for a later manual image choice in metadata.imagePrompt, set metadata.audience to "public" or "close-friends", and include metadata.context (such as the situation or location). Include the date and time in "timestamp". Do not generate an image or call image generation for this proposal; image generation happens only after the user manually chooses it.
+Do not create or modify old contact cards from story updates. Only propose a new contact when the update explicitly introduces that person as a new contact.
 
 Return:
 {
@@ -125,6 +128,36 @@ Keep proposals concise and reviewable. For calls, record only that a call occurr
   }
 });
 
+router.post("/story/image/upload", raw({ type: "application/octet-stream", limit: "12mb" }), async (req, res) => {
+  const data = req.body;
+  const contentType = Buffer.isBuffer(data) ? detectImageType(data) : null;
+  if (!Buffer.isBuffer(data) || data.length === 0 || data.length > 12 * 1024 * 1024 || !contentType) {
+    res.status(400).json({ error: "Provide a JPEG, PNG, or WebP image up to 12 MB." });
+    return;
+  }
+  try {
+    const imageId = await saveStoryImage(data, contentType);
+    res.json({ imageId });
+  } catch (error) {
+    req.log.error({ err: error }, "Story image upload failed");
+    res.status(503).json({ error: error instanceof Error ? error.message : "Could not persist the uploaded image." });
+  }
+});
+
+router.get("/story/image/:imageId", async (req, res) => {
+  try {
+    const { file, size, contentType } = await loadStoryImage(String(req.params.imageId));
+    res.set({ "Content-Type": contentType, "Cache-Control": "private, max-age=31536000, immutable", "Content-Length": String(size) });
+    file.createReadStream().on("error", error => {
+      req.log.error({ err: error }, "Story image streaming failed");
+      if (!res.headersSent) res.status(500).end(); else res.destroy(error);
+    }).pipe(res);
+  } catch (error) {
+    req.log.warn({ err: error }, "Story image not available");
+    res.status(404).json({ error: "Image not found" });
+  }
+});
+
 router.post("/story/image", async (req, res) => {
   const input = GenerateStoryImageBody.safeParse(req.body);
   if (!input.success) {
@@ -153,21 +186,31 @@ router.post("/story/image", async (req, res) => {
     });
     if (!response.ok) {
       req.log.error({ status: response.status }, "Image generation provider failed");
-      res.status(503).json({ error: "Image generation is temporarily unavailable." });
+      let detail = "";
+      try {
+        const providerError = (await response.json()) as { error?: { message?: string } | string };
+        detail = typeof providerError.error === "string" ? providerError.error : providerError.error?.message || "";
+      } catch {
+        // Keep the provider status useful even when its error body is not JSON.
+      }
+      res.status(503).json({ error: detail || `Image generation provider failed (${response.status}).` });
       return;
     }
     const payload = (await response.json()) as { data?: Array<{ b64_json?: string }> };
     const image = payload.data?.[0]?.b64_json;
     if (!image) throw new Error("Provider returned no image");
+    const generated = Buffer.from(image, "base64");
+    const contentType = detectImageType(generated);
+    if (!contentType) throw new Error("Provider returned an unsupported image.");
     res.json(
       GenerateStoryImageResponse.parse({
-        dataUrl: `data:image/png;base64,${image}`,
+        dataUrl: `data:${contentType};base64,${image}`,
         caption: input.data.prompt,
       }),
     );
   } catch (error) {
     req.log.error({ err: error }, "Unable to generate story image");
-    res.status(503).json({ error: "The image could not be generated." });
+    res.status(503).json({ error: error instanceof Error ? error.message : "The image could not be generated." });
   }
 });
 

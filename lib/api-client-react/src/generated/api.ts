@@ -26,6 +26,7 @@ import type {
   StoryGenerationResult,
   StoryImageInput,
   StoryImageResult,
+  StoryImageUploadResult,
   VoiceAudioInput,
   VoiceAudioResult,
   VoiceTranscriptInput,
@@ -389,6 +390,171 @@ export const useGenerateStoryImage = <TError = ErrorType<void>,
       > => {
       return useMutation(getGenerateStoryImageMutationOptions(options));
     }
+
+export const getUploadStoryImageUrl = () => {
+
+
+
+
+  return `/api/story/image/upload`
+}
+
+/**
+ * @summary Persist an uploaded story image
+ */
+export const uploadStoryImage = async (uploadStoryImageBody: Blob, options?: Parameters<typeof customFetch>[1]): Promise<StoryImageUploadResult> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<StoryImageUploadResult>(getUploadStoryImageUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/octet-stream', ...getHeaders(options?.headers) },
+    body: uploadStoryImageBody
+  }
+);}
+
+
+
+
+
+export const getUploadStoryImageMutationKey = () => ['uploadStoryImage'] as const;
+
+export const getUploadStoryImageMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadStoryImage>>, TError,UploadStoryImageMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof uploadStoryImage>>, TError,UploadStoryImageMutationVariables, TContext> => {
+
+const mutationKey = getUploadStoryImageMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof uploadStoryImage>>, UploadStoryImageMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  uploadStoryImage(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UploadStoryImageMutationResult = NonNullable<Awaited<ReturnType<typeof uploadStoryImage>>>
+    export type UploadStoryImageMutationBody = BodyType<Blob>
+    export type UploadStoryImageMutationError = ErrorType<void>
+    export type UploadStoryImageMutationVariables = {data: BodyType<Blob>}
+
+    /**
+ * @summary Persist an uploaded story image
+ */
+export const useUploadStoryImage = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadStoryImage>>, TError,UploadStoryImageMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof uploadStoryImage>>,
+        TError,
+        UploadStoryImageMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUploadStoryImageMutationOptions(options));
+    }
+
+export const getGetStoryImageUrl = (imageId: string,) => {
+
+
+
+
+  return `/api/story/image/${imageId}`
+}
+
+/**
+ * @summary Stream a persistent story image
+ */
+export const getStoryImage = async (imageId: string, options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getGetStoryImageUrl(imageId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetStoryImageQueryKey = (imageId: string,) => {
+    return [
+    `/api/story/image/${imageId}`
+    ] as const;
+    }
+
+
+export const getGetStoryImageQueryOptions = <TData = Awaited<ReturnType<typeof getStoryImage>>, TError = ErrorType<void>>(imageId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getStoryImage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetStoryImageQueryKey(imageId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStoryImage>>> = ({ signal }) => getStoryImage(imageId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: imageId !== null && imageId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getStoryImage>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetStoryImageQueryResult = NonNullable<Awaited<ReturnType<typeof getStoryImage>>>
+export type GetStoryImageQueryError = ErrorType<void>
+
+
+/**
+ * @summary Stream a persistent story image
+ */
+
+export function useGetStoryImage<TData = Awaited<ReturnType<typeof getStoryImage>>, TError = ErrorType<void>>(
+ imageId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getStoryImage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetStoryImageQueryOptions(imageId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getGenerateVoiceTranscriptUrl = () => {
 

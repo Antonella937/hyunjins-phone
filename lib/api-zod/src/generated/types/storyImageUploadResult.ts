@@ -6,8 +6,6 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface StoryImageResult {
-  dataUrl: string;
-  caption: string;
-  imageId?: string;
+export interface StoryImageUploadResult {
+  imageId: string;
 }

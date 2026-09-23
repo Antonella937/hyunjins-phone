@@ -22,6 +22,15 @@ export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: Pho
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
+  const [editImagePrompt, setEditImagePrompt] = useState('');
+  const [editAudience, setEditAudience] = useState<'public' | 'close-friends'>('public');
+  const [editContext, setEditContext] = useState('');
+  const [editTimestamp, setEditTimestamp] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const imageError = (error: unknown) => {
+    const response = error && typeof error === 'object' && 'response' in error ? (error as { response?: { data?: { error?: string } } }).response : undefined;
+    return response?.data?.error || (error instanceof Error ? error.message : String(error));
+  };
 
   // Handle Canon updates
   const handleCanonChange = (key: keyof Canon, value: string) => {
@@ -57,14 +66,26 @@ export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: Pho
     });
   };
 
-  const publishApproved = (single?: ReviewProposal) => {
+  const publishApproved = async (single?: ReviewProposal) => {
     if (publishing.current) return;
     const items = single ? [single] : proposals.filter(p => approvedIds.has(p.reviewId));
     if (!items.length) return;
     publishing.current = true;
     setSaveError('');
     try {
-      onPublish(items);
+      const ready = await Promise.all(items.map(async item => {
+        const dataUrl = item.app === 'gallery' && typeof item.metadata?.dataUrl === 'string' ? item.metadata.dataUrl : '';
+        if (!dataUrl) return item;
+        const upload = await fetch('/api/story/image/upload', {
+          method: 'POST', headers: { 'Content-Type': 'application/octet-stream' },
+          body: await (await fetch(dataUrl)).blob(),
+        });
+        const result = await upload.json().catch(() => null) as { imageId?: string; error?: string } | null;
+        if (!upload.ok || !result?.imageId) throw new Error(result?.error || 'Could not save the approved image.');
+        const { dataUrl: _preview, ...metadata } = item.metadata || {};
+        return { ...item, metadata: { ...metadata, imageId: result.imageId } };
+      }));
+      onPublish(ready);
       const savedIds = new Set(items.map(p => p.reviewId));
       setProposals(prev => prev.filter(p => !savedIds.has(p.reviewId)));
       setApprovedIds(prev => new Set([...prev].filter(id => !savedIds.has(id))));
@@ -72,7 +93,7 @@ export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: Pho
       if (items.length === proposals.length) setTab('update');
     } catch (error) {
       console.error('Could not save generated activity', error);
-      setSaveError(`Could not save generated activity: ${error instanceof Error ? error.message : String(error)}`);
+      setSaveError(`Could not save generated activity: ${imageError(error)}`);
     } finally {
       publishing.current = false;
     }
@@ -91,7 +112,7 @@ export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: Pho
           content: res.caption,
           timestamp: 'now',
           person: null,
-          metadata: { dataUrl: res.dataUrl },
+           metadata: { dataUrl: res.dataUrl },
         };
         setProposals(prev => [proposal, ...prev]);
         setApprovedIds(prev => new Set(prev).add(proposal.reviewId));
@@ -101,22 +122,32 @@ export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: Pho
     });
   };
 
-  const handleManualImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+   const handleManualImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      if (dataUrl.length > 2_000_000) {
-        alert("Image is too large for local storage. Please choose a smaller image.");
-        return;
-      }
+     setUploadingImage(true);
+     setSaveError('');
+     try {
+       const response = await fetch('/api/story/image/upload', {
+         method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: file,
+       });
+       if (!response.ok) {
+         const body = await response.json().catch(() => null) as { error?: string } | null;
+         throw new Error(body?.error || 'Image upload failed.');
+       }
+       const { imageId } = await response.json() as { imageId?: string };
+       if (!imageId) throw new Error('Image upload returned no persistent image reference.');
       setStore(s => ({
         ...s,
-        gallery: [{ id: `img-${Date.now()}`, title: 'Uploaded', album: 'Manual', date: 'now', caption: 'uploaded from device', tone: 'blue', dataUrl }, ...s.gallery]
+         gallery: [{ id: `img-${crypto.randomUUID()}`, title: 'Uploaded', album: 'Manual', date: new Date().toLocaleString(), caption: 'uploaded from device', tone: 'blue', imageId }, ...s.gallery]
       }));
-    };
-    reader.readAsDataURL(file);
+       setSuccess('Image saved to Gallery.');
+     } catch (error) {
+       setSaveError(`Could not save image: ${imageError(error)}`);
+     } finally {
+       setUploadingImage(false);
+       e.target.value = '';
+     }
   };
 
   return (
@@ -151,7 +182,7 @@ export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: Pho
         {saveError && <p role="alert" className="mb-4 rounded-xl border border-red-400/30 bg-red-400/10 p-3 text-sm text-red-200">{saveError}</p>}
         {success && <p role="status" className="mb-4 rounded-xl border border-[#a7c8ac]/30 bg-[#a7c8ac]/10 p-3 text-sm text-[#c2ddc4]">{success}</p>}
         {generateActivity.isError && <p role="alert" className="mb-4 text-sm text-red-200">Could not generate phone activity. Try again.</p>}
-        {generateImage.isError && <p role="alert" className="mb-4 text-sm text-red-200">Could not generate image. Try again.</p>}
+         {generateImage.isError && <p role="alert" className="mb-4 text-sm text-red-200">Could not generate image: {imageError(generateImage.error)}</p>}
         {tab === 'update' && (
           <div className="space-y-6">
             <div>
@@ -203,7 +234,7 @@ export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: Pho
                   <span className="text-xs text-white/30">OR</span>
                   <label className="cursor-pointer rounded-lg border border-white/10 px-3 py-1.5 text-xs text-white/50 hover:bg-white/5">
                     Upload from device
-                    <input type="file" accept="image/*" className="hidden" onChange={handleManualImageUpload} />
+                     <input type="file" accept="image/*" className="hidden" onChange={handleManualImageUpload} disabled={uploadingImage} />
                   </label>
                 </div>
               </div>
@@ -236,11 +267,21 @@ export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: Pho
                               <div className="flex gap-2">
                                  <button onClick={() => {
                                    if (isEditing) {
-                                     setProposals(prev => prev.map(item => item.reviewId === p.reviewId ? { ...item, title: editTitle, content: editContent } : item));
+                                      setProposals(prev => prev.map(item => item.reviewId === p.reviewId ? {
+                                        ...item, title: editTitle, content: editContent,
+                                        ...(p.app === 'instagram' && /story/i.test(p.type) ? {
+                                          timestamp: editTimestamp,
+                                          metadata: { ...item.metadata, imagePrompt: editImagePrompt, audience: editAudience, context: editContext },
+                                        } : {}),
+                                      } : item));
                                      setEditingId(null);
                                    } else {
                                      setEditTitle(p.title);
                                      setEditContent(p.content);
+                                      setEditImagePrompt(String(p.metadata?.imagePrompt || ''));
+                                      setEditAudience(p.metadata?.audience === 'close-friends' ? 'close-friends' : 'public');
+                                      setEditContext(String(p.metadata?.context || ''));
+                                      setEditTimestamp(p.timestamp);
                                      setEditingId(p.reviewId);
                                    }
                                  }} className="text-white/40 hover:text-white">
@@ -256,9 +297,15 @@ export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: Pho
                                <div className="space-y-2">
                                  <input value={editTitle} onChange={e => setEditTitle(e.target.value)} className="w-full rounded bg-black/20 p-2 text-sm font-medium outline-none" />
                                  <textarea value={editContent} onChange={e => setEditContent(e.target.value)} className="w-full rounded bg-black/20 p-2 text-sm outline-none" rows={3} />
+                                  {p.app === 'instagram' && /story/i.test(p.type) && <>
+                                    <label className="block text-xs text-white/60">Image prompt<input value={editImagePrompt} onChange={e => setEditImagePrompt(e.target.value)} className="mt-1 w-full rounded bg-black/20 p-2 text-sm text-white" /></label>
+                                    <label className="block text-xs text-white/60">Date / time<input value={editTimestamp} onChange={e => setEditTimestamp(e.target.value)} className="mt-1 w-full rounded bg-black/20 p-2 text-sm text-white" /></label>
+                                    <label className="block text-xs text-white/60">Context<input value={editContext} onChange={e => setEditContext(e.target.value)} className="mt-1 w-full rounded bg-black/20 p-2 text-sm text-white" /></label>
+                                    <label className="block text-xs text-white/60">Audience<select value={editAudience} onChange={e => setEditAudience(e.target.value as 'public' | 'close-friends')} className="mt-1 w-full rounded bg-[#251e2b] p-2 text-sm text-white"><option value="public">Public</option><option value="close-friends">Close Friends</option></select></label>
+                                  </>}
                                </div>
                             ) : (
-                               <><h4 className="mb-1 font-medium">{p.title} {p.person && <span className="text-white/50 text-xs">· with {p.person}</span>}</h4><p className="text-sm text-white/70">{p.content}</p></>
+                                <><h4 className="mb-1 font-medium">{p.title} {p.person && <span className="text-white/50 text-xs">· with {p.person}</span>}</h4><p className="text-sm text-white/70">{p.content}</p>{p.app === 'instagram' && /story/i.test(p.type) && <p className="mt-2 text-xs text-white/45">Image prompt: {p.metadata?.imagePrompt || 'not provided'} · {p.metadata?.audience || 'public'} · {p.timestamp}{!p.metadata?.imageId && !p.metadata?.dataUrl && ' · Image needed after approval'}</p>}</>
                             )}
                              {!isEditing && <button onClick={() => publishApproved(p)} className="mt-3 text-xs text-[#e7aabb]">Accept this item</button>}
                           </div>

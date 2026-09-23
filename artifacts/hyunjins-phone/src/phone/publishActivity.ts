@@ -14,7 +14,9 @@ export function publishActivity(store: PhoneStore, proposals: ReviewProposal[]):
 
   for (const p of proposals) {
     if (recorded.has(p.reviewId)) continue;
-    if (!p.reviewId || !text(p.title) || !text(p.content)) throw new Error('A reviewed item needs a title and content.');
+    if (!p.reviewId || !text(p.title) || (!text(p.content) && !(p.app === 'instagram' && subtype(p).includes('story')))) {
+      throw new Error('A reviewed item needs a title and content, except an image-prompt-only Instagram Story.');
+    }
     const id = `ai-${crypto.randomUUID()}`;
     const title = text(p.title);
     const content = text(p.content);
@@ -66,10 +68,27 @@ export function publishActivity(store: PhoneStore, proposals: ReviewProposal[]):
         break;
       }
       case 'instagram':
+        // Proposals describe a story; image generation is a separate user choice.
+        // Never turn an image prompt into a caption or silently create a contact.
         if (type.includes('story')) {
-          next.instagramStories.unshift({ id, user: person || 'hyune.studio', caption: content, time, dataUrl: meta(p, 'dataUrl') || undefined, source: 'ai-generated' });
+          next.instagramStories.unshift({
+            id, user: person || next.instagramProfile?.username || 'hyune.studio', caption: content, time,
+            imageId: meta(p, 'imageId') || undefined, dataUrl: meta(p, 'dataUrl') || undefined,
+            imagePrompt: meta(p, 'imagePrompt') || undefined,
+            audience: meta(p, 'audience') === 'close-friends' ? 'close-friends' : 'public',
+            location: meta(p, 'location') || meta(p, 'context') || undefined,
+            taggedContactIds: Array.isArray(p.metadata?.taggedContactIds)
+              ? p.metadata.taggedContactIds.filter((value): value is string => typeof value === 'string' && next.contacts.some(c => c.id === value))
+              : [],
+            source: 'ai-generated',
+          });
         } else {
-          next.posts.unshift({ id, user: person || 'hyune.studio', caption: content, time, tone: 'rose', likes: 0, dataUrl: meta(p, 'dataUrl') || undefined });
+          next.posts.unshift({
+            id, user: person || next.instagramProfile?.username || 'hyune.studio', caption: content, time, tone: 'rose', likes: 0,
+            imageId: meta(p, 'imageId') || undefined, dataUrl: meta(p, 'dataUrl') || undefined,
+            location: meta(p, 'location') || undefined,
+            audience: meta(p, 'audience') === 'close-friends' ? 'close-friends' : 'public',
+          });
         }
         break;
       case 'echo': {
@@ -79,7 +98,7 @@ export function publishActivity(store: PhoneStore, proposals: ReviewProposal[]):
         break;
       }
       case 'gallery':
-        next.gallery.unshift({ id, title, caption: content, date: time, album: meta(p, 'album') || 'Random Photos', tone: 'rose', dataUrl: meta(p, 'dataUrl') || undefined });
+        next.gallery.unshift({ id, title, caption: content, date: time, album: meta(p, 'album') || 'Random Photos', tone: 'rose', imageId: meta(p, 'imageId') || undefined, dataUrl: meta(p, 'dataUrl') || undefined });
         break;
       case 'browser': {
         const history = { id, title, url: meta(p, 'url') || content, time };

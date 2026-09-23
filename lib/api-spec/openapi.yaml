@@ -80,6 +80,52 @@ paths:
                 $ref: "#/components/schemas/StoryImageResult"
         "503":
           description: Image provider unavailable
+  /story/image/upload:
+    post:
+      operationId: uploadStoryImage
+      tags: [story]
+      summary: Persist an uploaded story image
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              $ref: "#/components/schemas/StoryImageFile"
+      responses:
+        "200":
+          description: Persistent uploaded image
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoryImageUploadResult"
+        "400":
+          description: Invalid image or image exceeds 12 MB
+        "503":
+          description: Image storage unavailable
+  /story/image/{imageId}:
+    get:
+      operationId: getStoryImage
+      tags: [story]
+      summary: Stream a persistent story image
+      parameters:
+        - name: imageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: JPEG, PNG, or WebP image
+          content:
+            image/jpeg:
+              schema: { type: string, format: binary }
+            image/png:
+              schema: { type: string, format: binary }
+            image/webp:
+              schema: { type: string, format: binary }
+        "404":
+          description: Image not found
   /story/voice/transcript:
     post:
       operationId: generateVoiceTranscript
@@ -288,5 +334,18 @@ components:
           type: string
         caption:
           type: string
+        imageId:
+          type: string
+          format: uuid
       required: [dataUrl, caption]
+    StoryImageFile:
+      type: string
+      description: Raw JPEG, PNG, or WebP bytes, up to 12 MB
+    StoryImageUploadResult:
+      type: object
+      properties:
+        imageId:
+          type: string
+          format: uuid
+      required: [imageId]
 

@@ -84,8 +84,27 @@ export const GenerateStoryImageBody = zod.object({
 
 export const GenerateStoryImageResponse = zod.object({
   "dataUrl": zod.string(),
-  "caption": zod.string()
+  "caption": zod.string(),
+  "imageId": zod.string().uuid().optional()
 })
+
+
+/**
+ * @summary Persist an uploaded story image
+ */
+export const UploadStoryImageResponse = zod.object({
+  "imageId": zod.string().uuid()
+})
+
+
+/**
+ * @summary Stream a persistent story image
+ */
+export const GetStoryImageParams = zod.object({
+  "imageId": zod.coerce.string().uuid()
+})
+
+export const GetStoryImageResponse = zod.unknown()
 
 
 /**

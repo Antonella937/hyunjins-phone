@@ -1,0 +1,314 @@
+Upgrade the EXISTING Instagram app inside the Living Phone so it is fully interactive instead of primarily decorative.
+
+IMPORTANT:
+KEEP the current Instagram visual design. I like the existing aesthetic, layout, colors, typography, profile design, post cards and Stories row.
+
+Do NOT redesign Instagram.
+Do NOT reset existing data.
+Do NOT delete existing posts or stories.
+Do NOT remove uploaded Gallery photos.
+
+The problem is functionality, not design.
+
+CURRENT PROBLEMS
+
+The Instagram profile and feed render correctly, but several elements are currently non-interactive.
+
+I cannot:
+
+* open existing posts
+* add or replace an image on an existing post
+* generate an AI image for an existing post
+* tap Stories to actually view them
+* attach images to existing Stories
+* generate AI images for Stories
+* properly create/edit/delete Instagram content manually
+
+Make these features functional.
+
+INSTAGRAM POSTS
+
+When I tap an existing post, open a full post detail view.
+
+The detail view should display:
+
+* actual post image
+* username
+* date/time
+* location if present
+* caption
+* likes
+* comments
+* saved status
+* tagged contacts when present
+
+When Edit Mode is ON, add:
+
+Edit Post
+Delete Post
+Add / Replace Image
+Choose from Gallery
+Upload from Phone
+✨ Generate Image with AI
+
+EDIT EXISTING POST
+
+Allow me to edit:
+
+* image
+* caption
+* date
+* time
+* location
+* likes/count
+* comments
+* tagged contacts
+* Close Friends status if relevant
+
+Saving must UPDATE the existing post, not create a duplicate.
+
+ADD / REPLACE IMAGE
+
+For an existing text-only or placeholder post, allow:
+
+Choose from Gallery
+Upload Image
+Generate Image with AI
+
+“Choose from Gallery” should open the Living Phone’s existing Gallery and let me select an existing image.
+
+“Upload Image” should use the iPhone photo picker.
+
+“Generate Image with AI” should open a prompt field.
+
+After AI generation, show a preview with:
+
+Use Image
+Regenerate
+Cancel
+
+Only save the generated image after I choose “Use Image.”
+
+Do NOT use the AI prompt itself as the Instagram caption or image description.
+
+AI IMAGE GENERATION
+
+Use the existing image-generation system already available elsewhere in the Living Phone.
+
+Do not create a fake placeholder.
+
+If image generation fails because of quota/provider issues, display the actual error.
+
+STORIES
+
+Make every Story circle tappable.
+
+Tapping a Story must open a full-screen Instagram-style Story viewer.
+
+Include:
+
+* actual Story image
+* username
+* timestamp
+* progress bar
+* tap right for next
+* tap left for previous
+* swipe/close gesture where supported
+* close button
+
+If a Story has no actual image, do NOT pretend it does.
+
+In Edit Mode provide:
+
+Edit Story
+Delete Story
+Add / Replace Image
+Choose from Gallery
+Upload from Phone
+✨ Generate Image with AI
+
+CREATE STORY
+
+The “+ / You” Story button must be functional.
+
+Tapping it should offer:
+
+Choose from Gallery
+Upload Photo
+✨ Generate Image with AI
+
+Then allow:
+
+* optional caption/text
+* date/time
+* Close Friends / Public
+* related contact/tag
+
+Save the Story persistently.
+
+AI-GENERATED STORIES
+
+Allow Story Update / Generate Day to propose Instagram Stories.
+
+A proposed Story may include:
+
+* image generation prompt
+* optional text/caption
+* date/time
+* audience
+* context
+
+After approval, if no actual image exists, display:
+
+Generate Image
+
+Do not show an empty Story circle as though a finished Story exists.
+
+PROFILE GRID
+
+Make profile grid thumbnails tappable.
+
+Tapping a thumbnail opens that specific post.
+
+Posts with real images should display real image thumbnails.
+
+Posts without an image should display a clear placeholder until I upload, select or generate one.
+
+NEW POST
+
+Add a functional:
+
+* New Post
+
+Allow:
+Choose from Gallery
+Upload from Phone
+✨ Generate Image with AI
+
+Then allow editing:
+Caption
+Location
+Date/time
+Tags
+Audience
+
+Preview before publishing.
+
+STORY HIGHLIGHTS
+
+Make existing Highlights interactive.
+
+Allow:
+Open Highlight
+Add Story to Highlight
+Remove Story
+Rename Highlight
+Delete Highlight
+
+INSTAGRAM INTERACTIONS
+
+Make these existing icons functional:
+
+Heart → like/unlike
+Save/star → save/unsave
+Comments → open comments
+Share → open fictional share options
+
+Persist these states.
+
+EDIT PROFILE
+
+Make the existing “edit profile” button functional.
+
+Allow editing:
+
+* profile picture
+* display name
+* username
+* bio
+* location text
+
+PROFILE / CONTACT CLEANUP
+
+Do not automatically recreate deleted old characters.
+
+Existing outdated Story entries or Instagram references involving:
+Mira
+Mar
+Antonella
+
+must be manually editable/deletable through Edit Mode.
+
+If “Antonella” represents the existing contact now named “Nela,” allow me to relink that Story/post to Nela rather than creating another Antonella contact.
+
+Do not automatically modify historical content unless I explicitly edit it.
+
+PERSISTENCE
+
+All Instagram content must use persistent storage.
+
+Images must use stable persistent file references.
+
+Do not rely on temporary blob URLs.
+
+Posts, Stories and images must survive:
+
+* navigation
+* refresh
+* closing the PWA
+* reopening the installed PWA
+
+REUSE EXISTING SYSTEMS
+
+Reuse:
+
+* existing Gallery storage
+* existing image upload system
+* existing AI image generator
+* existing Contacts
+* existing persistent database
+* existing Edit Mode
+
+Do NOT build disconnected duplicate systems.
+
+TEST BEFORE REPORTING SUCCESS
+
+Test these exact flows:
+
+TEST 1 — EXISTING POST
+Open an existing Instagram post.
+Edit it.
+Upload/select a real image.
+Save.
+Verify the image appears in the post.
+Refresh.
+Verify it remains.
+
+TEST 2 — AI POST IMAGE
+Open an existing post with no real image.
+Select “Generate Image with AI.”
+Generate an image.
+Preview it.
+Select “Use Image.”
+Verify it appears in the post.
+
+TEST 3 — STORY
+Tap an existing Story circle.
+Verify the Story viewer actually opens.
+Add/select a real image.
+Save.
+Close and reopen the Story.
+Verify the image displays.
+
+TEST 4 — NEW STORY
+Tap the + Story button.
+Select an image from Gallery.
+Save.
+Verify the new Story appears and can be opened.
+
+TEST 5 — PERSISTENCE
+Refresh the PWA and verify all changes remain.
+
+Do not consider Instagram complete merely because buttons, Story circles, post cards or image placeholders render.
+
+The feature is complete only when I can actually tap, open, edit, attach/generate images, save and view the resulting Instagram content.

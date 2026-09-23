@@ -17,8 +17,14 @@ export type Contact = {
   firstName?: string; lastName?: string; nickname?: string; relationship?: string;
   notes?: string; favorite?: boolean; photoDataUrl?: string;
 };
-export type GalleryItem = { id: string; title: string; album: string; date: string; caption: string; tone: string; favorite?: boolean; dataUrl?: string };
-export type Post = { id: string; user: string; caption: string; time: string; tone: string; likes: number; saved?: boolean; dataUrl?: string };
+export type GalleryItem = { id: string; title: string; album: string; date: string; caption: string; tone: string; favorite?: boolean; dataUrl?: string; imageId?: string };
+export type InstagramComment = { id: string; user: string; text: string; time: string };
+export type Post = {
+  id: string; user: string; caption: string; time: string; tone: string; likes: number;
+  saved?: boolean; liked?: boolean; dataUrl?: string; imageId?: string;
+  location?: string; comments?: InstagramComment[]; taggedContactIds?: string[];
+  audience?: 'public' | 'close-friends';
+};
 export type VoiceMemo = {
   id: string; title: string; date: string; duration: string; transcript: string; private?: boolean;
   context?: string; delivery?: string; category?: string; relatedEvent?: string; relatedContactId?: string;
@@ -36,7 +42,13 @@ export type EchoPost = { id: string; author: string; handle: string; content: st
 export type EchoNotification = { id: string; type: 'like' | 'repost' | 'reply' | 'mention'; user: string; text: string; time: string };
 export type StudioProject = { id: string; title: string; status: 'demo' | 'unfinished' | 'finished' | 'idea'; updated: string; metadata: string; duration?: string; hasAudio?: boolean };
 export type Place = { id: string; name: string; category: string; location: string; notes?: string; saved?: boolean };
-export type InstagramStory = { id: string; user: string; caption: string; time: string; dataUrl?: string; source?: 'ai-generated' };
+export type InstagramStory = {
+  id: string; user: string; caption: string; time: string; dataUrl?: string; imageId?: string;
+  source?: 'ai-generated'; imagePrompt?: string; location?: string;
+  audience?: 'public' | 'close-friends'; taggedContactIds?: string[];
+};
+export type InstagramProfile = { displayName: string; username: string; bio: string; location: string; photoDataUrl?: string; imageId?: string };
+export type InstagramHighlight = { id: string; name: string; storyIds: string[] };
 export type MusicActivity = { id: string; title: string; content: string; time: string; source?: 'ai-generated' };
 export type MusicPlaylist = { id: string; name: string; songs: string[]; description?: string; artwork?: string };
 
@@ -118,6 +130,13 @@ export const seedPhone = {
     { id: 'p2', user: 'hyune.studio', caption: 'new shapes, old paper. working title: after rain.', time: '4d', tone: 'rose', likes: 892 },
     { id: 'p3', user: 'mar.rivera', caption: 'the studio has been very quiet lately.', time: '1w', tone: 'amber', likes: 341 },
   ] as Post[],
+  instagramProfile: { displayName: 'Hyunjin', username: 'hyune.studio', bio: '', location: 'Seoul' } as InstagramProfile,
+  instagramHighlights: [
+    { id: 'ig-close-friends', name: 'Close Friends', storyIds: [] },
+    { id: 'ig-saved', name: 'saved', storyIds: [] },
+    { id: 'ig-tagged', name: 'tagged', storyIds: [] },
+    { id: 'ig-activity', name: 'activity', storyIds: [] },
+  ] as InstagramHighlight[],
   voice: [
     { id: 'v1', title: 'melody in the kitchen', date: 'Today, 00:32', duration: '01:18', transcript: 'a small melody, recorded before it disappears', private: true },
     { id: 'v2', title: 'for Antonella', date: '23 May 2024', duration: '00:42', transcript: 'I saw the moon from the practice room window. It looked like your side of the world.', },

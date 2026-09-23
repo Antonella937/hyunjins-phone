@@ -6,8 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface StoryImageResult {
-  dataUrl: string;
-  caption: string;
-  imageId?: string;
-}
+/**
+ * Raw JPEG, PNG, or WebP bytes, up to 12 MB
+ */
+export type StoryImageFile = string;
