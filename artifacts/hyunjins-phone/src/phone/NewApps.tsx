@@ -267,6 +267,13 @@ export function BrowserApp({ store, setStore, editMode }: { store: PhoneStore; s
 
         {tab === 'history' && (
           <div className="space-y-4">
+            {store.browserSearches.length > 0 && <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+              <p className="mb-2 text-[10px] uppercase tracking-widest text-white/40">Search history</p>
+              {store.browserSearches.map(h => <div key={h.id} className="flex items-center justify-between gap-2 py-2 text-sm">
+                <div className="min-w-0"><p className="truncate">{h.title}</p><p className="truncate text-[10px] text-white/40">{h.url} · {h.time}</p></div>
+                {editMode && <button onClick={() => setStore(s => ({ ...s, browserSearches: s.browserSearches.filter(x => x.id !== h.id) }))} aria-label="Delete search"><Trash2 size={14} /></button>}
+              </div>)}
+            </div>}
             {store.browserHistory.map(h => (
               <div key={h.id} className="flex items-center justify-between rounded-xl p-2 hover:bg-white/5">
                 <div className="flex items-center gap-3">
@@ -330,7 +337,7 @@ export function BrowserApp({ store, setStore, editMode }: { store: PhoneStore; s
 
 // Echo App (Microblogging)
 export function EchoApp({ store, setStore, editMode }: { store: PhoneStore; setStore: React.Dispatch<React.SetStateAction<PhoneStore>>; editMode: boolean }) {
-  const [tab, setTab] = useState<'timeline' | 'profile' | 'search' | 'activity' | 'bookmarks'>('timeline');
+  const [tab, setTab] = useState<'timeline' | 'profile' | 'search' | 'activity' | 'bookmarks' | 'drafts'>('timeline');
 
   return (
     <div className="flex h-full flex-col">
@@ -391,6 +398,13 @@ export function EchoApp({ store, setStore, editMode }: { store: PhoneStore; setS
             </div>
           </div>
         )}
+        {tab === 'drafts' && <div className="space-y-3">
+          <SectionTitle>saved drafts</SectionTitle>
+          {store.echoDrafts.map(p => <div key={p.id} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <p className="text-sm">{p.content}</p><p className="mt-2 text-[10px] text-white/40">{p.time}</p>
+          </div>)}
+          {!store.echoDrafts.length && <p className="text-sm text-white/40">No drafts yet.</p>}
+        </div>}
         
         {tab === 'activity' && (
           <div className="space-y-4">
@@ -443,6 +457,7 @@ export function EchoApp({ store, setStore, editMode }: { store: PhoneStore; setS
         <button onClick={() => setTab('activity')} className={`flex flex-col items-center gap-1 ${tab === 'activity' ? 'text-[#a293b6]' : ''}`}><Bell size={20} />Activity</button>
         <button onClick={() => setTab('bookmarks')} className={`flex flex-col items-center gap-1 ${tab === 'bookmarks' ? 'text-[#a293b6]' : ''}`}><Bookmark size={20} />Saved</button>
         <button onClick={() => setTab('profile')} className={`flex flex-col items-center gap-1 ${tab === 'profile' ? 'text-[#a293b6]' : ''}`}><User size={20} />Profile</button>
+        <button onClick={() => setTab('drafts')} className={`flex flex-col items-center gap-1 ${tab === 'drafts' ? 'text-[#a293b6]' : ''}`}><FileText size={20} />Drafts</button>
       </div>
     </div>
   );

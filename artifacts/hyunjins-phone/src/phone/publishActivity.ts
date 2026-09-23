@@ -1,0 +1,116 @@
+import type { ActivityProposal } from '@workspace/api-client-react';
+import type { PhoneStore } from './config';
+
+export type ReviewProposal = ActivityProposal & { reviewId: string };
+
+const text = (value: unknown): string => typeof value === 'string' ? value.trim() : '';
+const meta = (proposal: ReviewProposal, key: string): string => text(proposal.metadata?.[key]);
+const subtype = (proposal: ReviewProposal) => proposal.type.toLowerCase().replace(/[\s_-]+/g, ' ');
+
+export function publishActivity(store: PhoneStore, proposals: ReviewProposal[]): PhoneStore {
+  const next: PhoneStore = structuredClone(store);
+  const recorded = new Set(next.publishedProposalIds);
+
+  for (const p of proposals) {
+    if (recorded.has(p.reviewId)) continue;
+    if (!p.reviewId || !text(p.title) || !text(p.content)) throw new Error('A reviewed item needs a title and content.');
+    const id = `ai-${crypto.randomUUID()}`;
+    const title = text(p.title);
+    const content = text(p.content);
+    const time = text(p.timestamp) || new Date().toISOString();
+    const person = text(p.person);
+    const type = subtype(p);
+    switch (p.app) {
+      case 'diary':
+        next.diary.unshift({ id, title, body: content, date: time, mood: meta(p, 'mood') || 'reflective' });
+        break;
+      case 'quickNotes':
+        next.quickNotes.unshift({ id, text: content, time, color: '#d895a6' });
+        break;
+      case 'notes':
+        next.notes.unshift({ id, title, body: content, meta: `ai-generated · ${time}`, color: '#d79bb0' });
+        break;
+      case 'messages': {
+        if (!person) throw new Error('A message needs a contact.');
+        const contact = next.contacts.find(c => c.name.toLowerCase() === person.toLowerCase());
+        const thread = next.messages.find(m =>
+          m.person.toLowerCase() === person.toLowerCase() ||
+          (contact && m.person.toLowerCase().startsWith(contact.name.split(' ')[0].toLowerCase()))
+        );
+        const from = meta(p, 'from') === 'me' ? 'me' : 'them';
+        if (thread) {
+          thread.messages.push({ from, text: content, time });
+          thread.preview = content;
+          thread.time = time;
+          next.messages = [thread, ...next.messages.filter(m => m !== thread)];
+        } else {
+          next.messages.unshift({
+            id, person: contact?.name || person,
+            initials: contact?.initials || person.slice(0, 2).toUpperCase(),
+            preview: content, time, color: contact?.color || '#b4a0b8',
+            messages: [{ from, text: content, time }],
+          });
+        }
+        break;
+      }
+      case 'instagram':
+        if (type.includes('story')) {
+          next.instagramStories.unshift({ id, user: person || 'hyune.studio', caption: content, time, dataUrl: meta(p, 'dataUrl') || undefined, source: 'ai-generated' });
+        } else {
+          next.posts.unshift({ id, user: person || 'hyune.studio', caption: content, time, tone: 'rose', likes: 0, dataUrl: meta(p, 'dataUrl') || undefined });
+        }
+        break;
+      case 'echo': {
+        const post = { id, author: person || 'hyune', handle: person ? `@${person.toLowerCase().replace(/\s+/g, '')}` : '@hyune', content, time, likes: 0, reposts: 0, replies: 0 };
+        if (type.includes('draft')) next.echoDrafts.unshift(post);
+        else next.echoPosts.unshift(post);
+        break;
+      }
+      case 'gallery':
+        next.gallery.unshift({ id, title, caption: content, date: time, album: meta(p, 'album') || 'Random Photos', tone: 'rose', dataUrl: meta(p, 'dataUrl') || undefined });
+        break;
+      case 'browser': {
+        const history = { id, title, url: meta(p, 'url') || content, time };
+        if (type.includes('search')) next.browserSearches.unshift(history);
+        else next.browserHistory.unshift(history);
+        break;
+      }
+      case 'calls': {
+        const contact = next.contacts.find(c => c.name.toLowerCase() === person.toLowerCase());
+        const missed = type.includes('missed') || meta(p, 'missed') === 'true';
+        const call = { id, contactId: contact?.id, name: contact?.name || person || title, time, missed, duration: meta(p, 'duration') || undefined, type: type.includes('voicemail') ? 'voicemail' as const : type.includes('video') ? 'video' as const : 'audio' as const };
+        next.calls.unshift(call);
+        if (missed) next.notifications.unshift({ id: `${id}-notification`, icon: 'phone', title: `Missed call from ${call.name}`, sub: content, color: '#d895a6', time });
+        break;
+      }
+      case 'voice':
+        next.voice.unshift({ id, title, transcript: content, date: time, duration: meta(p, 'duration') || '—' });
+        break;
+      case 'music':
+        next.musicActivity.unshift({ id, title, content, time, source: 'ai-generated' });
+        break;
+      case 'studio':
+        next.studioProjects.unshift({ id, title, metadata: content, updated: time, status: type.includes('demo') ? 'demo' : 'idea', hasAudio: false });
+        break;
+      case 'calendar': {
+        const day = Number(meta(p, 'day')) || Number(time.match(/\b(?:0?[1-9]|[12]\d|3[01])\b/)?.[0]) || new Date().getDate();
+        next.events.unshift({ id, day: Math.min(31, Math.max(1, day)), title, time, kind: meta(p, 'kind') || 'story' });
+        break;
+      }
+      case 'places':
+        next.places.unshift({ id, name: title, location: meta(p, 'location') || content, category: meta(p, 'category') || 'important locations', notes: content, saved: true });
+        break;
+      case 'files':
+        next.files.unshift({ id, name: title, folder: meta(p, 'folder') || 'RP Materials', type: meta(p, 'fileType') || 'document', date: time });
+        break;
+      case 'notifications':
+        next.notifications.unshift({ id, title, sub: content, icon: meta(p, 'icon') || 'story', color: '#d895a6', time });
+        break;
+      default:
+        throw new Error(`Unsupported activity destination: ${p.app}`);
+    }
+    recorded.add(p.reviewId);
+  }
+  next.publishedProposalIds = [...recorded];
+  return next;
+}

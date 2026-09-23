@@ -27,6 +27,8 @@ export type EchoPost = { id: string; author: string; handle: string; content: st
 export type EchoNotification = { id: string; type: 'like' | 'repost' | 'reply' | 'mention'; user: string; text: string; time: string };
 export type StudioProject = { id: string; title: string; status: 'demo' | 'unfinished' | 'finished' | 'idea'; updated: string; metadata: string; duration?: string; hasAudio?: boolean };
 export type Place = { id: string; name: string; category: string; location: string; notes?: string; saved?: boolean };
+export type InstagramStory = { id: string; user: string; caption: string; time: string; dataUrl?: string; source?: 'ai-generated' };
+export type MusicActivity = { id: string; title: string; content: string; time: string; source?: 'ai-generated' };
 
 export type Canon = {
   character: string;
@@ -165,6 +167,11 @@ export const seedPhone = {
     { id: 'pl2', name: 'Little Cinema', category: 'art', location: 'Euljiro, Seoul', saved: true, notes: 'Back row seats.' },
     { id: 'pl3', name: 'Cafe by the river', category: 'cafés', location: 'Mangwon, Seoul', saved: false }
   ] as Place[],
+  instagramStories: [] as InstagramStory[],
+  echoDrafts: [] as EchoPost[],
+  browserSearches: [] as BrowserHistory[],
+  musicActivity: [] as MusicActivity[],
+  publishedProposalIds: [] as string[],
   canon: seedCanon
 };
 

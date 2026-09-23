@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import { PhoneStore, Canon, seedCanon } from './config';
-import { X, Server, RefreshCw, Send, CheckCircle2, Trash2, Edit2, Check, Image as ImageIcon } from 'lucide-react';
-import { useGetStoryProviders, useGenerateStoryActivity, useGenerateStoryImage, ActivityProposal, ActivityProposalApp } from '@workspace/api-client-react';
+import { X, RefreshCw, Send, CheckCircle2, Trash2, Edit2, Check, Image as ImageIcon } from 'lucide-react';
+import { useGetStoryProviders, useGenerateStoryActivity, useGenerateStoryImage } from '@workspace/api-client-react';
+import type { ReviewProposal } from './publishActivity';
 
-export function StoryAdmin({ store, setStore, onClose }: { store: PhoneStore; setStore: React.Dispatch<React.SetStateAction<PhoneStore>>; onClose: () => void }) {
+export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: PhoneStore; setStore: React.Dispatch<React.SetStateAction<PhoneStore>>; onPublish: (items: ReviewProposal[]) => void; onClose: () => void }) {
   const [tab, setTab] = useState<'update' | 'proposals' | 'canon'>('update');
   const [storyUpdate, setStoryUpdate] = useState('');
   const [mode, setMode] = useState<'story_update' | 'generate_day'>('story_update');
@@ -13,8 +14,11 @@ export function StoryAdmin({ store, setStore, onClose }: { store: PhoneStore; se
   const generateActivity = useGenerateStoryActivity();
   const generateImage = useGenerateStoryImage();
 
-  const [proposals, setProposals] = useState<any[]>([]);
+  const [proposals, setProposals] = useState<ReviewProposal[]>([]);
   const [approvedIds, setApprovedIds] = useState<Set<string>>(new Set());
+  const [saveError, setSaveError] = useState('');
+  const [success, setSuccess] = useState('');
+  const publishing = useRef(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
@@ -43,88 +47,44 @@ export function StoryAdmin({ store, setStore, onClose }: { store: PhoneStore; se
       }
     }, {
       onSuccess: (data) => {
-        setProposals(data.proposals);
-        setApprovedIds(new Set(data.proposals.map((p: any) => p.id)));
+        const batch = crypto.randomUUID();
+        const items = data.proposals.map((p, i) => ({ ...p, reviewId: `${batch}:${i}` }));
+        setProposals(items);
+        setApprovedIds(new Set(items.map(p => p.reviewId)));
+        setSaveError('');
         setTab('proposals');
       }
     });
   };
 
-  const publishApproved = () => {
-    const toPublish = proposals.filter(p => approvedIds.has(p.id));
-    
-    setStore(s => {
-      const draft: PhoneStore = JSON.parse(JSON.stringify(s));
-      toPublish.forEach(p => {
-        const id = `gen-${Date.now()}-${p.id}`;
-        switch (p.app) {
-          case 'messages':
-            const msgThread = draft.messages.find(m => m.person.toLowerCase().includes(p.person?.toLowerCase() || ''));
-            if (msgThread) {
-              msgThread.messages.push({ from: 'them', text: p.content, time: 'now' });
-            } else {
-              draft.messages.unshift({ id, person: p.person || 'Unknown', initials: 'U', preview: p.content, time: 'now', color: '#888', messages: [{ from: 'them', text: p.content, time: 'now' }] });
-            }
-            break;
-          case 'diary':
-            draft.diary.unshift({ id, date: 'Today', title: p.title, mood: p.metadata?.mood || 'reflective', body: p.content });
-            break;
-          case 'echo':
-            draft.echoPosts.unshift({ id, author: 'hyune', handle: '@hyune', content: p.content, time: 'now', likes: 0, reposts: 0, replies: 0 });
-            break;
-          case 'quickNotes':
-            draft.quickNotes.unshift({ id, text: p.content, time: 'now', color: '#d895a6' });
-            break;
-          case 'gallery':
-            draft.gallery.unshift({ id, title: p.title, album: 'Generated', date: p.timestamp || 'now', caption: p.content, tone: 'rose', dataUrl: p.metadata?.dataUrl });
-            break;
-          case 'instagram':
-            draft.posts.unshift({ id, user: p.person || 'hyune.studio', caption: p.content, time: p.timestamp || 'now', tone: 'rose', likes: 0 });
-            break;
-          case 'notes':
-            draft.notes.unshift({ id, title: p.title, meta: `generated · ${p.timestamp || 'now'}`, color: '#d79bb0', body: p.content });
-            break;
-          case 'voice':
-            draft.voice.unshift({ id, title: p.title, date: p.timestamp || 'now', duration: String(p.metadata?.duration || '00:30'), transcript: p.content, private: true });
-            break;
-          case 'music':
-          case 'studio':
-            draft.studioProjects.unshift({ id, title: p.title, status: 'idea', updated: p.timestamp || 'now', metadata: p.content, hasAudio: false });
-            break;
-          case 'calendar':
-            draft.events.unshift({ id, day: Number(p.metadata?.day || new Date().getDate()), title: p.title, time: p.timestamp || 'time not set', kind: String(p.metadata?.kind || 'story') });
-            break;
-          case 'browser':
-            draft.browserHistory.unshift({ id, url: String(p.metadata?.url || 'about:story'), title: p.title, time: p.timestamp || 'now' });
-            break;
-          case 'calls':
-            draft.calls.unshift({ id, name: p.person || p.title, time: p.timestamp || 'now', duration: p.metadata?.duration ? String(p.metadata.duration) : undefined, missed: Boolean(p.metadata?.missed), type: p.type === 'video' ? 'video' : p.type === 'voicemail' ? 'voicemail' : 'audio' });
-            break;
-          case 'notifications':
-            draft.notifications.unshift({ id, icon: String(p.metadata?.icon || 'story'), title: p.title, sub: p.content, color: '#d895a6', time: p.timestamp || 'now' });
-            break;
-          case 'files':
-            draft.files.unshift({ id, name: p.title, folder: String(p.metadata?.folder || 'Story'), type: String(p.metadata?.fileType || p.type || 'document'), date: p.timestamp || 'now' });
-            break;
-          case 'places':
-            draft.places.unshift({ id, name: p.title, category: String(p.metadata?.category || 'important locations'), location: String(p.metadata?.location || p.content), notes: p.content, saved: true });
-            break;
-        }
-      });
-      return draft;
-    });
-
-    setProposals([]);
-    setStoryUpdate('');
-    setTab('update');
+  const publishApproved = (single?: ReviewProposal) => {
+    if (publishing.current) return;
+    const items = single ? [single] : proposals.filter(p => approvedIds.has(p.reviewId));
+    if (!items.length) return;
+    publishing.current = true;
+    setSaveError('');
+    try {
+      onPublish(items);
+      const savedIds = new Set(items.map(p => p.reviewId));
+      setProposals(prev => prev.filter(p => !savedIds.has(p.reviewId)));
+      setApprovedIds(prev => new Set([...prev].filter(id => !savedIds.has(id))));
+      setSuccess(`${items.length} ${items.length === 1 ? 'item' : 'items'} saved to the phone.`);
+      if (items.length === proposals.length) setTab('update');
+    } catch (error) {
+      console.error('Could not save generated activity', error);
+      setSaveError('Could not save generated activity');
+    } finally {
+      publishing.current = false;
+    }
   };
 
   const generateImg = () => {
     if (!imagePrompt.trim()) return;
     generateImage.mutate({ data: { prompt: imagePrompt } }, {
       onSuccess: (res) => {
-        const proposal = {
-          id: `image-${Date.now()}`,
+        const proposal: ReviewProposal = {
+          id: `image-${crypto.randomUUID()}`,
+          reviewId: `image-${crypto.randomUUID()}`,
           app: 'gallery',
           type: 'generated image',
           title: 'Generated image',
@@ -134,7 +94,7 @@ export function StoryAdmin({ store, setStore, onClose }: { store: PhoneStore; se
           metadata: { dataUrl: res.dataUrl },
         };
         setProposals(prev => [proposal, ...prev]);
-        setApprovedIds(prev => new Set(prev).add(proposal.id));
+        setApprovedIds(prev => new Set(prev).add(proposal.reviewId));
         setTab('proposals');
         setImagePrompt('');
       }
@@ -188,6 +148,10 @@ export function StoryAdmin({ store, setStore, onClose }: { store: PhoneStore; se
       </div>
 
       <div className="flex-1 overflow-y-auto p-5 pb-20">
+        {saveError && <p role="alert" className="mb-4 rounded-xl border border-red-400/30 bg-red-400/10 p-3 text-sm text-red-200">{saveError}</p>}
+        {success && <p role="status" className="mb-4 rounded-xl border border-[#a7c8ac]/30 bg-[#a7c8ac]/10 p-3 text-sm text-[#c2ddc4]">{success}</p>}
+        {generateActivity.isError && <p role="alert" className="mb-4 text-sm text-red-200">Could not generate phone activity. Try again.</p>}
+        {generateImage.isError && <p role="alert" className="mb-4 text-sm text-red-200">Could not generate image. Try again.</p>}
         {tab === 'update' && (
           <div className="space-y-6">
             <div>
@@ -254,7 +218,7 @@ export function StoryAdmin({ store, setStore, onClose }: { store: PhoneStore; se
             ) : (
               <>
                 <div className="mb-6 flex justify-between">
-                  <button onClick={() => setApprovedIds(new Set(proposals.map(p => p.id)))} className="text-xs text-[#d98ca7]">Approve All</button>
+                  <button onClick={() => setApprovedIds(new Set(proposals.map(p => p.reviewId)))} className="text-xs text-[#d98ca7]">Approve All</button>
                   <button onClick={() => setApprovedIds(new Set())} className="text-xs text-white/40">Deselect All</button>
                 </div>
                 
@@ -263,27 +227,27 @@ export function StoryAdmin({ store, setStore, onClose }: { store: PhoneStore; se
                     <div key={app} className="space-y-4">
                       <h3 className="text-[10px] uppercase tracking-widest text-white/40">{app}</h3>
                       {(appProposals as any[]).map((p: any) => {
-                        const approved = approvedIds.has(p.id);
-                        const isEditing = editingId === p.id;
+                        const approved = approvedIds.has(p.reviewId);
+                        const isEditing = editingId === p.reviewId;
                         return (
-                          <div key={p.id} className={`rounded-2xl border p-4 ${approved ? 'border-[#d98ca7]/50 bg-[#d98ca7]/5' : 'border-white/10 bg-white/5'}`}>
+                          <div key={p.reviewId} className={`rounded-2xl border p-4 ${approved ? 'border-[#d98ca7]/50 bg-[#d98ca7]/5' : 'border-white/10 bg-white/5'}`}>
                             <div className="mb-3 flex items-center justify-between">
                               <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-white/50">{p.type}</span>
                               <div className="flex gap-2">
                                  <button onClick={() => {
                                    if (isEditing) {
-                                     setProposals(prev => prev.map(item => item.id === p.id ? { ...item, title: editTitle, content: editContent } : item));
+                                     setProposals(prev => prev.map(item => item.reviewId === p.reviewId ? { ...item, title: editTitle, content: editContent } : item));
                                      setEditingId(null);
                                    } else {
                                      setEditTitle(p.title);
                                      setEditContent(p.content);
-                                     setEditingId(p.id);
+                                     setEditingId(p.reviewId);
                                    }
                                  }} className="text-white/40 hover:text-white">
                                   {isEditing ? <Check size={14} /> : <Edit2 size={14} />}
                                 </button>
-                                <button onClick={() => setProposals(prev => prev.filter(x => x.id !== p.id))} className="text-white/40 hover:text-red-400"><Trash2 size={14} /></button>
-                                <button onClick={() => setApprovedIds(prev => { const n = new Set(prev); if (approved) n.delete(p.id); else n.add(p.id); return n; })} className={approved ? 'text-[#d98ca7]' : 'text-white/40'}>
+                                <button onClick={() => setProposals(prev => prev.filter(x => x.reviewId !== p.reviewId))} aria-label="Delete proposal" className="text-white/40 hover:text-red-400"><Trash2 size={14} /></button>
+                                <button onClick={() => setApprovedIds(prev => { const n = new Set(prev); if (approved) n.delete(p.reviewId); else n.add(p.reviewId); return n; })} aria-label={approved ? 'Deselect proposal' : 'Select proposal'} className={approved ? 'text-[#d98ca7]' : 'text-white/40'}>
                                   <CheckCircle2 size={18} />
                                 </button>
                               </div>
@@ -296,6 +260,7 @@ export function StoryAdmin({ store, setStore, onClose }: { store: PhoneStore; se
                             ) : (
                                <><h4 className="mb-1 font-medium">{p.title} {p.person && <span className="text-white/50 text-xs">· with {p.person}</span>}</h4><p className="text-sm text-white/70">{p.content}</p></>
                             )}
+                             {!isEditing && <button onClick={() => publishApproved(p)} className="mt-3 text-xs text-[#e7aabb]">Accept this item</button>}
                           </div>
                         );
                       })}
@@ -306,7 +271,7 @@ export function StoryAdmin({ store, setStore, onClose }: { store: PhoneStore; se
                 <div className="mt-8 flex gap-3">
                   <button onClick={() => setProposals([])} className="flex-1 rounded-xl border border-white/10 py-3 text-sm">Cancel</button>
                   <button onClick={submitUpdate} className="flex-1 rounded-xl border border-[#d98ca7]/50 py-3 text-sm text-[#d98ca7]">Regenerate</button>
-                  <button onClick={publishApproved} className="flex-1 rounded-xl bg-[#d98ca7] py-3 text-sm text-[#291d26]">Publish Approved</button>
+                  <button onClick={() => publishApproved()} disabled={!approvedIds.size} className="flex-1 rounded-xl bg-[#d98ca7] py-3 text-sm text-[#291d26] disabled:opacity-50">Publish Approved</button>
                 </div>
               </>
             )}
