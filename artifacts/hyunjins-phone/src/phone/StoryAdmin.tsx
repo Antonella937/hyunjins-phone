@@ -129,7 +129,7 @@ export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: Pho
               <>
                 <span className={providers.text.connected ? 'text-green-400' : 'text-red-400'} title={providers.text.label}>● Text</span>
                 <span className={providers.image.connected ? 'text-green-400' : 'text-red-400'} title={providers.image.label}>● Image</span>
-                <span className={providers.audio.connected ? 'text-green-400' : 'text-red-400'} title={providers.audio.label}>● Audio</span>
+                <span className={providers.audio.connected ? 'text-green-400' : 'text-red-400'} title={providers.audio.label}>● Audio AI {providers.audio.connected ? 'Connected' : 'Not Connected'}</span>
                 <span className={providers.music.connected ? 'text-green-400' : 'text-red-400'} title={providers.music.label}>● Music</span>
               </>
             )}

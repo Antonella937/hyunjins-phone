@@ -15,7 +15,12 @@ export type CalendarEvent = { id: string; day: number; title: string; time: stri
 export type Contact = { id: string; name: string; initials: string; role: string; context: string; color: string };
 export type GalleryItem = { id: string; title: string; album: string; date: string; caption: string; tone: string; favorite?: boolean; dataUrl?: string };
 export type Post = { id: string; user: string; caption: string; time: string; tone: string; likes: number; saved?: boolean; dataUrl?: string };
-export type VoiceMemo = { id: string; title: string; date: string; duration: string; transcript: string; private?: boolean };
+export type VoiceMemo = {
+  id: string; title: string; date: string; duration: string; transcript: string; private?: boolean;
+  context?: string; delivery?: string; category?: string; relatedEvent?: string;
+  language?: 'English' | 'Korean' | 'Mixed'; voiceId?: 'alloy' | 'echo' | 'onyx';
+  audioId?: string; durationSeconds?: number;
+};
 export type Note = { id: string; title: string; meta: string; color: string; body: string };
 export type AppNotification = { id: string; icon: string; title: string; sub: string; color: string; time: string };
 export type FileItem = { id: string; name: string; folder: string; type: string; date: string };

@@ -80,8 +80,100 @@ paths:
                 $ref: "#/components/schemas/StoryImageResult"
         "503":
           description: Image provider unavailable
+  /story/voice/transcript:
+    post:
+      operationId: generateVoiceTranscript
+      tags: [story]
+      summary: Draft a fictional voice memo transcript for review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VoiceTranscriptInput"
+      responses:
+        "200":
+          description: Draft voice memo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VoiceTranscriptResult"
+        "503":
+          description: Text provider unavailable
+  /story/voice/audio:
+    post:
+      operationId: generateVoiceAudio
+      tags: [story]
+      summary: Generate and persist audio for an approved memo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VoiceAudioInput"
+      responses:
+        "200":
+          description: Persistent generated audio
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VoiceAudioResult"
+        "503":
+          description: Audio provider or storage unavailable
+  /story/voice/audio/{audioId}:
+    get:
+      operationId: getVoiceAudio
+      tags: [story]
+      summary: Stream persistent generated voice audio
+      parameters:
+        - name: audioId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: WAV audio
+          content:
+            audio/wav:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Audio not found
 components:
   schemas:
+    VoiceTranscriptInput:
+      type: object
+      required: [prompt, language]
+      properties:
+        prompt: { type: string, minLength: 3, maxLength: 2000 }
+        language: { type: string, enum: [English, Korean, Mixed] }
+    VoiceTranscriptResult:
+      type: object
+      required: [title, transcript, context, delivery, category, language]
+      properties:
+        title: { type: string }
+        transcript: { type: string }
+        context: { type: string }
+        delivery: { type: string }
+        category: { type: string }
+        relatedEvent: { type: string }
+        language: { type: string, enum: [English, Korean, Mixed] }
+    VoiceAudioInput:
+      type: object
+      required: [transcript, voice, language]
+      properties:
+        transcript: { type: string, minLength: 1, maxLength: 4000 }
+        voice: { type: string, enum: [alloy, echo, onyx] }
+        language: { type: string, enum: [English, Korean, Mixed] }
+        delivery: { type: string, maxLength: 300 }
+    VoiceAudioResult:
+      type: object
+      required: [audioId, durationSeconds]
+      properties:
+        audioId: { type: string }
+        durationSeconds: { type: number }
     HealthStatus:
       type: object
       properties:

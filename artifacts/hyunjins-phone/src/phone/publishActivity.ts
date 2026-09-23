@@ -96,7 +96,12 @@ export function publishActivity(store: PhoneStore, proposals: ReviewProposal[]):
         break;
       }
       case 'voice':
-        next.voice.unshift({ id, title, transcript: content, date: time, duration: meta(p, 'duration') || '—' });
+        next.voice.unshift({
+          id, title, transcript: content, date: time, duration: '—', private: meta(p, 'private') !== 'false',
+          context: meta(p, 'context'), delivery: meta(p, 'delivery'), category: meta(p, 'category'),
+          relatedEvent: meta(p, 'relatedEvent'),
+          language: (['English', 'Korean', 'Mixed'].includes(meta(p, 'language')) ? meta(p, 'language') : 'English') as 'English' | 'Korean' | 'Mixed',
+        });
         break;
       case 'music':
         next.musicActivity.unshift({ id, title, content, time, source: 'ai-generated' });

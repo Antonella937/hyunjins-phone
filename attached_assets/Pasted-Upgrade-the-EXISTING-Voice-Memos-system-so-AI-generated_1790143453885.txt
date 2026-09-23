@@ -1,0 +1,192 @@
+Upgrade the EXISTING Voice Memos system so AI-generated Voice Memos can contain REAL playable generated audio.
+
+Do not redesign the existing interface and do not remove any existing Voice Memos, uploaded audio, Story Update features, Canon data or user content.
+
+GOAL
+
+Story Update and Generate Day should be able to propose a Voice Memo when it naturally makes sense.
+
+Example:
+
+Story Update:
+“Hyunjin got home late after rehearsal, made something to eat and spent some time drawing before bed.”
+
+The AI might propose:
+
+VOICE MEMO
+Title: sketch idea
+Time: 12:48 AM
+Transcript:
+“I need to remember this before I fall asleep. Try the same composition again tomorrow, but keep the shadows softer…”
+
+After approval, I should be able to generate and play REAL audio for that memo.
+
+AI VOICE MEMO GENERATION
+
+When Story Update creates a Voice Memo, generate:
+
+* Title
+* Date
+* Time
+* Context
+* Transcript
+* Suggested emotional delivery
+* Category
+* Related event when appropriate
+
+Voice Memos should feel spontaneous and believable.
+
+They can include:
+
+* art ideas
+* reminders
+* melody ideas
+* unfinished thoughts
+* observations
+* private reflections
+* funny thoughts
+* things he wants to remember
+* messages he records but does not necessarily send
+
+Do not generate a Voice Memo for every Story Update.
+
+REAL AUDIO GENERATION
+
+Add a button:
+
+✨ Generate Audio
+
+When pressed, send the approved transcript to a server-side text-to-speech provider and generate an actual playable audio file.
+
+When generation finishes:
+
+* persist the audio file
+* associate it with the Voice Memo record
+* calculate/store its real duration
+* enable Play/Pause
+* make the waveform/progress functional
+* keep the audio available after refresh and after reopening the PWA
+
+Also add:
+
+✨ Regenerate Audio
+
+and allow me to choose another available fictional voice if desired.
+
+VOICE CHARACTER
+
+Use a fictional synthetic male Korean voice for this roleplay character.
+
+Desired delivery:
+young adult
+soft
+warm
+natural
+casual
+emotionally expressive when appropriate
+comfortable speaking both Korean and English when supported
+not announcer-like
+not overly dramatic
+realistic pauses and conversational pacing
+
+IMPORTANT:
+Do not clone, imitate, recreate or attempt to match the real voice of Hyunjin or any other real person.
+
+The generated voice must remain an original synthetic fictional voice.
+
+LANGUAGE
+
+Allow each Voice Memo to specify:
+English
+Korean
+Mixed
+
+When Mixed is selected, preserve Korean and English naturally in the same transcript when supported by the selected TTS provider.
+
+AI AUDIO PROVIDER
+
+Add an Audio / TTS provider to the existing AI Providers section.
+
+Show:
+
+Audio AI
+Connected / Not Connected
+
+Use a secure backend integration.
+
+API keys must only exist in server-side secrets/environment variables and must never be exposed in frontend code.
+
+If no TTS provider is configured, keep the transcript and show:
+
+“Audio AI Provider Not Connected”
+
+Do not simulate successful audio generation.
+
+STORY UPDATE REVIEW
+
+If Story Update proposes a Voice Memo, show the transcript in Review BEFORE generating audio.
+
+Allow:
+
+Approve
+Edit Transcript
+Delete
+
+After approval, provide:
+
+✨ Generate Audio
+
+This prevents spending audio-generation credits on a Voice Memo I do not want.
+
+MANUAL AI VOICE MEMO
+
+Inside Voice Memos add:
+
+* New AI Voice Memo
+
+Let me provide either:
+
+A) A complete transcript
+
+OR
+
+B) A short prompt such as:
+“Hyunjin records a sleepy private reminder about an unfinished drawing before going to bed.”
+
+AI should generate the transcript first.
+
+Show the transcript for editing.
+
+Only generate audio after I confirm it.
+
+PLAYBACK
+
+Generated audio must use the existing functional Voice Memo player with:
+
+Play
+Pause
+Seek
+Current time
+Duration
+Playback speed
+Progress/waveform
+
+PERSISTENCE
+
+Generated audio must be stored persistently.
+
+Do not use temporary browser blob URLs as permanent storage.
+
+After closing and reopening the installed PWA, generated Voice Memos must still play.
+
+COST CONTROL
+
+Never automatically generate audio for every AI Voice Memo.
+
+Always generate the text/transcript first.
+
+Audio generation requires a separate explicit “Generate Audio” action.
+
+This avoids wasting API credits.
+
+Do not alter the existing phone design or other apps.

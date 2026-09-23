@@ -25,7 +25,11 @@ import type {
   StoryGenerationInput,
   StoryGenerationResult,
   StoryImageInput,
-  StoryImageResult
+  StoryImageResult,
+  VoiceAudioInput,
+  VoiceAudioResult,
+  VoiceTranscriptInput,
+  VoiceTranscriptResult
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -127,12 +131,6 @@ export function useHealthCheck<TData = Awaited<ReturnType<typeof healthCheck>>, 
   return withQueryKey(query, queryOptions.queryKey);
 }
 
-
-
-
-
-
-
 export const getGetStoryProvidersUrl = () => {
 
 
@@ -203,13 +201,6 @@ export function useGetStoryProviders<TData = Awaited<ReturnType<typeof getStoryP
 
   return withQueryKey(query, queryOptions.queryKey);
 }
-
-
-
-
-
-
-
 export const getGenerateStoryActivityUrl = () => {
 
 
@@ -386,3 +377,249 @@ export const useGenerateStoryImage = <TError = ErrorType<void>,
       return useMutation(getGenerateStoryImageMutationOptions(options));
     }
 
+export const getGenerateVoiceTranscriptUrl = () => {
+
+
+
+
+  return `/api/story/voice/transcript`
+}
+
+/**
+ * @summary Draft a fictional voice memo transcript for review
+ */
+export const generateVoiceTranscript = async (voiceTranscriptInput: VoiceTranscriptInput, options?: Parameters<typeof customFetch>[1]): Promise<VoiceTranscriptResult> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<VoiceTranscriptResult>(getGenerateVoiceTranscriptUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(voiceTranscriptInput)
+  }
+);}
+
+
+
+
+
+export const getGenerateVoiceTranscriptMutationKey = () => ['generateVoiceTranscript'] as const;
+
+export const getGenerateVoiceTranscriptMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateVoiceTranscript>>, TError,GenerateVoiceTranscriptMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generateVoiceTranscript>>, TError,GenerateVoiceTranscriptMutationVariables, TContext> => {
+
+const mutationKey = getGenerateVoiceTranscriptMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateVoiceTranscript>>, GenerateVoiceTranscriptMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  generateVoiceTranscript(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GenerateVoiceTranscriptMutationResult = NonNullable<Awaited<ReturnType<typeof generateVoiceTranscript>>>
+    export type GenerateVoiceTranscriptMutationBody = BodyType<VoiceTranscriptInput>
+    export type GenerateVoiceTranscriptMutationError = ErrorType<void>
+    export type GenerateVoiceTranscriptMutationVariables = {data: BodyType<VoiceTranscriptInput>}
+
+    /**
+ * @summary Draft a fictional voice memo transcript for review
+ */
+export const useGenerateVoiceTranscript = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateVoiceTranscript>>, TError,GenerateVoiceTranscriptMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof generateVoiceTranscript>>,
+        TError,
+        GenerateVoiceTranscriptMutationVariables,
+        TContext
+      > => {
+      return useMutation(getGenerateVoiceTranscriptMutationOptions(options));
+    }
+
+export const getGenerateVoiceAudioUrl = () => {
+
+
+
+
+  return `/api/story/voice/audio`
+}
+
+/**
+ * @summary Generate and persist audio for an approved memo
+ */
+export const generateVoiceAudio = async (voiceAudioInput: VoiceAudioInput, options?: Parameters<typeof customFetch>[1]): Promise<VoiceAudioResult> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<VoiceAudioResult>(getGenerateVoiceAudioUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(voiceAudioInput)
+  }
+);}
+
+
+
+
+
+export const getGenerateVoiceAudioMutationKey = () => ['generateVoiceAudio'] as const;
+
+export const getGenerateVoiceAudioMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateVoiceAudio>>, TError,GenerateVoiceAudioMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generateVoiceAudio>>, TError,GenerateVoiceAudioMutationVariables, TContext> => {
+
+const mutationKey = getGenerateVoiceAudioMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateVoiceAudio>>, GenerateVoiceAudioMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  generateVoiceAudio(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GenerateVoiceAudioMutationResult = NonNullable<Awaited<ReturnType<typeof generateVoiceAudio>>>
+    export type GenerateVoiceAudioMutationBody = BodyType<VoiceAudioInput>
+    export type GenerateVoiceAudioMutationError = ErrorType<void>
+    export type GenerateVoiceAudioMutationVariables = {data: BodyType<VoiceAudioInput>}
+
+    /**
+ * @summary Generate and persist audio for an approved memo
+ */
+export const useGenerateVoiceAudio = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateVoiceAudio>>, TError,GenerateVoiceAudioMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof generateVoiceAudio>>,
+        TError,
+        GenerateVoiceAudioMutationVariables,
+        TContext
+      > => {
+      return useMutation(getGenerateVoiceAudioMutationOptions(options));
+    }
+
+export const getGetVoiceAudioUrl = (audioId: string,) => {
+
+
+
+
+  return `/api/story/voice/audio/${audioId}`
+}
+
+/**
+ * @summary Stream persistent generated voice audio
+ */
+export const getVoiceAudio = async (audioId: string, options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getGetVoiceAudioUrl(audioId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetVoiceAudioQueryKey = (audioId: string,) => {
+    return [
+    `/api/story/voice/audio/${audioId}`
+    ] as const;
+    }
+
+
+export const getGetVoiceAudioQueryOptions = <TData = Awaited<ReturnType<typeof getVoiceAudio>>, TError = ErrorType<void>>(audioId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getVoiceAudio>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetVoiceAudioQueryKey(audioId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVoiceAudio>>> = ({ signal }) => getVoiceAudio(audioId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: audioId !== null && audioId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getVoiceAudio>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetVoiceAudioQueryResult = NonNullable<Awaited<ReturnType<typeof getVoiceAudio>>>
+export type GetVoiceAudioQueryError = ErrorType<void>
+
+
+/**
+ * @summary Stream persistent generated voice audio
+ */
+
+export function useGetVoiceAudio<TData = Awaited<ReturnType<typeof getVoiceAudio>>, TError = ErrorType<void>>(
+ audioId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getVoiceAudio>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetVoiceAudioQueryOptions(audioId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}

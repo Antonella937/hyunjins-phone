@@ -5,6 +5,78 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type VoiceTranscriptInputLanguage = typeof VoiceTranscriptInputLanguage[keyof typeof VoiceTranscriptInputLanguage];
+
+
+export const VoiceTranscriptInputLanguage = {
+  English: 'English',
+  Korean: 'Korean',
+  Mixed: 'Mixed',
+} as const;
+
+export interface VoiceTranscriptInput {
+  /**
+     * @minLength 3
+     * @maxLength 2000
+     */
+  prompt: string;
+  language: VoiceTranscriptInputLanguage;
+}
+
+export type VoiceTranscriptResultLanguage = typeof VoiceTranscriptResultLanguage[keyof typeof VoiceTranscriptResultLanguage];
+
+
+export const VoiceTranscriptResultLanguage = {
+  English: 'English',
+  Korean: 'Korean',
+  Mixed: 'Mixed',
+} as const;
+
+export interface VoiceTranscriptResult {
+  title: string;
+  transcript: string;
+  context: string;
+  delivery: string;
+  category: string;
+  relatedEvent?: string;
+  language: VoiceTranscriptResultLanguage;
+}
+
+export type VoiceAudioInputVoice = typeof VoiceAudioInputVoice[keyof typeof VoiceAudioInputVoice];
+
+
+export const VoiceAudioInputVoice = {
+  alloy: 'alloy',
+  echo: 'echo',
+  onyx: 'onyx',
+} as const;
+
+export type VoiceAudioInputLanguage = typeof VoiceAudioInputLanguage[keyof typeof VoiceAudioInputLanguage];
+
+
+export const VoiceAudioInputLanguage = {
+  English: 'English',
+  Korean: 'Korean',
+  Mixed: 'Mixed',
+} as const;
+
+export interface VoiceAudioInput {
+  /**
+     * @minLength 1
+     * @maxLength 4000
+     */
+  transcript: string;
+  voice: VoiceAudioInputVoice;
+  language: VoiceAudioInputLanguage;
+  /** @maxLength 300 */
+  delivery?: string;
+}
+
+export interface VoiceAudioResult {
+  audioId: string;
+  durationSeconds: number;
+}
+
 export interface HealthStatus {
   status: string;
 }

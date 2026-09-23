@@ -88,3 +88,59 @@ export const GenerateStoryImageResponse = zod.object({
 })
 
 
+/**
+ * @summary Draft a fictional voice memo transcript for review
+ */
+export const generateVoiceTranscriptBodyPromptMin = 3;
+export const generateVoiceTranscriptBodyPromptMax = 2000;
+
+
+
+export const GenerateVoiceTranscriptBody = zod.object({
+  "prompt": zod.string().min(generateVoiceTranscriptBodyPromptMin).max(generateVoiceTranscriptBodyPromptMax),
+  "language": zod.enum(['English', 'Korean', 'Mixed'])
+})
+
+export const GenerateVoiceTranscriptResponse = zod.object({
+  "title": zod.string(),
+  "transcript": zod.string(),
+  "context": zod.string(),
+  "delivery": zod.string(),
+  "category": zod.string(),
+  "relatedEvent": zod.string().optional(),
+  "language": zod.enum(['English', 'Korean', 'Mixed'])
+})
+
+
+/**
+ * @summary Generate and persist audio for an approved memo
+ */
+export const generateVoiceAudioBodyTranscriptMax = 4000;
+
+export const generateVoiceAudioBodyDeliveryMax = 300;
+
+
+
+export const GenerateVoiceAudioBody = zod.object({
+  "transcript": zod.string().min(1).max(generateVoiceAudioBodyTranscriptMax),
+  "voice": zod.enum(['alloy', 'echo', 'onyx']),
+  "language": zod.enum(['English', 'Korean', 'Mixed']),
+  "delivery": zod.string().max(generateVoiceAudioBodyDeliveryMax).optional()
+})
+
+export const GenerateVoiceAudioResponse = zod.object({
+  "audioId": zod.string(),
+  "durationSeconds": zod.number()
+})
+
+
+/**
+ * @summary Stream persistent generated voice audio
+ */
+export const GetVoiceAudioParams = zod.object({
+  "audioId": zod.coerce.string()
+})
+
+export const GetVoiceAudioResponse = zod.unknown()
+
+
