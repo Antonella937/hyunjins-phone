@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: story
+    description: Living Phone story generation
 paths:
   /healthz:
     get:
@@ -24,6 +26,60 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /story/providers:
+    get:
+      operationId: getStoryProviders
+      tags: [story]
+      summary: Get Living Phone provider status
+      responses:
+        "200":
+          description: Provider connection status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProviderStatus"
+  /story/generate:
+    post:
+      operationId: generateStoryActivity
+      tags: [story]
+      summary: Generate proposed fictional phone activity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StoryGenerationInput"
+      responses:
+        "200":
+          description: Proposed activity for review
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoryGenerationResult"
+        "400":
+          description: Invalid request
+        "503":
+          description: Text generation provider unavailable
+  /story/image:
+    post:
+      operationId: generateStoryImage
+      tags: [story]
+      summary: Generate a fictional phone photo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StoryImageInput"
+      responses:
+        "200":
+          description: Generated image
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoryImageResult"
+        "503":
+          description: Image provider unavailable
 components:
   schemas:
     HealthStatus:
@@ -33,4 +89,89 @@ components:
           type: string
       required:
         - status
+    ProviderStatusItem:
+      type: object
+      properties:
+        connected:
+          type: boolean
+        label:
+          type: string
+      required: [connected, label]
+    ProviderStatus:
+      type: object
+      properties:
+        text:
+          $ref: "#/components/schemas/ProviderStatusItem"
+        image:
+          $ref: "#/components/schemas/ProviderStatusItem"
+        music:
+          $ref: "#/components/schemas/ProviderStatusItem"
+        audio:
+          $ref: "#/components/schemas/ProviderStatusItem"
+      required: [text, image, music, audio]
+    StoryGenerationInput:
+      type: object
+      properties:
+        storyUpdate:
+          type: string
+          minLength: 3
+          maxLength: 12000
+        mode:
+          type: string
+          enum: [story_update, generate_day]
+        canon:
+          type: object
+          additionalProperties: true
+        existingPhone:
+          type: object
+          additionalProperties: true
+      required: [storyUpdate, mode, canon, existingPhone]
+    ActivityProposal:
+      type: object
+      properties:
+        id:
+          type: string
+        app:
+          type: string
+          enum: [messages, instagram, echo, gallery, diary, notes, quickNotes, voice, music, studio, calendar, browser, calls, notifications, files, places]
+        type:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        timestamp:
+          type: string
+        person:
+          type: ["string", "null"]
+        metadata:
+          type: object
+          additionalProperties: true
+      required: [id, app, type, title, content, timestamp, metadata]
+    StoryGenerationResult:
+      type: object
+      properties:
+        summary:
+          type: string
+        proposals:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivityProposal"
+      required: [summary, proposals]
+    StoryImageInput:
+      type: object
+      properties:
+        prompt:
+          type: string
+          minLength: 3
+          maxLength: 2000
+      required: [prompt]
+    StoryImageResult:
+      type: object
+      properties:
+        dataUrl:
+          type: string
+        caption:
+          type: string
+      required: [dataUrl, caption]
 
