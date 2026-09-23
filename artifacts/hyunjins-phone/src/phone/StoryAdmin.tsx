@@ -27,6 +27,9 @@ export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: Pho
   const [editAudience, setEditAudience] = useState<'public' | 'close-friends'>('public');
   const [editContext, setEditContext] = useState('');
   const [editTimestamp, setEditTimestamp] = useState('');
+  const [editEchoPerson, setEditEchoPerson] = useState('');
+  const [editEchoType, setEditEchoType] = useState('post');
+  const [editEchoTargetId, setEditEchoTargetId] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
   const [pickingStoryId, setPickingStoryId] = useState<string | null>(null);
   const [pendingPublicationIds, setPendingPublicationIds] = useState<string[] | null>(null);
@@ -50,6 +53,10 @@ export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: Pho
       recentEvents: store.events.slice(0,2),
       instagramProfile: { username: store.instagramProfile?.username || 'hyune.studio' },
       contacts: store.contacts.map(c => ({ id: c.id, name: c.name })),
+       echoPosts: store.echoPosts.filter(p => !p.replyToId).slice(0, 8).map(p => ({
+         id: p.id, author: p.contactId === 'c1' && p.author === 'Antonella' ? 'Nela' : p.author,
+         contactId: p.contactId, content: p.content,
+       })),
     };
 
     generateActivity.mutate({
@@ -320,6 +327,10 @@ export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: Pho
                                           timestamp: editTimestamp,
                                           metadata: { ...item.metadata, imagePrompt: editImagePrompt, audience: editAudience, context: editContext },
                                         } : {}),
+                                         ...(p.app === 'echo' ? {
+                                           type: editEchoType, person: editEchoPerson,
+                                           metadata: { ...item.metadata, targetPostId: editEchoTargetId },
+                                         } : {}),
                                       } : item));
                                      setEditingId(null);
                                    } else {
@@ -329,6 +340,9 @@ export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: Pho
                                       setEditAudience(p.metadata?.audience === 'close-friends' ? 'close-friends' : 'public');
                                       setEditContext(String(p.metadata?.context || ''));
                                       setEditTimestamp(p.timestamp);
+                                       setEditEchoPerson(p.person || 'hyune');
+                                       setEditEchoType(p.type);
+                                       setEditEchoTargetId(String(p.metadata?.targetPostId || ''));
                                      setEditingId(p.reviewId);
                                    }
                                  }} className="text-white/40 hover:text-white">
@@ -350,9 +364,19 @@ export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: Pho
                                     <label className="block text-xs text-white/60">Context<input value={editContext} onChange={e => setEditContext(e.target.value)} className="mt-1 w-full rounded bg-black/20 p-2 text-sm text-white" /></label>
                                     <label className="block text-xs text-white/60">Audience<select value={editAudience} onChange={e => setEditAudience(e.target.value as 'public' | 'close-friends')} className="mt-1 w-full rounded bg-[#251e2b] p-2 text-sm text-white"><option value="public">Public</option><option value="close-friends">Close Friends</option></select></label>
                                   </>}
+                                   {p.app === 'echo' && <>
+                                     <label className="block text-xs text-white/60">Action<select value={editEchoType} onChange={e => setEditEchoType(e.target.value)} className="mt-1 w-full rounded bg-[#251e2b] p-2 text-sm text-white">
+                                       {['post', 'reply', 'like', 'save', 'repost', 'draft'].map(action => <option key={action} value={action}>{action}</option>)}
+                                     </select></label>
+                                     <label className="block text-xs text-white/60">Actor (hyune or existing Contact)<input value={editEchoPerson} onChange={e => setEditEchoPerson(e.target.value)} className="mt-1 w-full rounded bg-black/20 p-2 text-sm text-white" /></label>
+                                     {['reply', 'like', 'save', 'repost'].includes(editEchoType) && <label className="block text-xs text-white/60">Target Echo post<select value={editEchoTargetId} onChange={e => setEditEchoTargetId(e.target.value)} className="mt-1 w-full rounded bg-[#251e2b] p-2 text-sm text-white">
+                                       <option value="">Select an existing post</option>
+                                       {store.echoPosts.filter(post => !post.replyToId).map(post => <option key={post.id} value={post.id}>{post.author}: {post.content.slice(0, 54)}</option>)}
+                                     </select></label>}
+                                   </>}
                                </div>
                             ) : (
-                                <><h4 className="mb-1 font-medium">{p.title} {p.person && <span className="text-white/50 text-xs">· with {p.person}</span>}</h4><p className="text-sm text-white/70">{p.content}</p>{p.app === 'instagram' && /story/i.test(p.type) && <p className="mt-2 text-xs text-white/45">Image prompt: {p.metadata?.imagePrompt || 'not provided'} · {p.metadata?.audience || 'public'} · {p.timestamp}{!p.metadata?.imageId && !p.metadata?.dataUrl && ' · Image needed after approval'}</p>}</>
+                                 <><h4 className="mb-1 font-medium">{p.title} {p.person && <span className="text-white/50 text-xs">· with {p.person}</span>}</h4><p className="text-sm text-white/70">{p.content}</p>{p.app === 'instagram' && /story/i.test(p.type) && <p className="mt-2 text-xs text-white/45">Image prompt: {p.metadata?.imagePrompt || 'not provided'} · {p.metadata?.audience || 'public'} · {p.timestamp}{!p.metadata?.imageId && !p.metadata?.dataUrl && ' · Image needed after approval'}</p>}{p.app === 'echo' && <p className="mt-2 text-xs text-white/45">Actor: {p.person || 'hyune'}{p.metadata?.targetPostId && ` · Target: ${store.echoPosts.find(post => post.id === p.metadata?.targetPostId)?.content.slice(0, 70) || 'unknown post'}`}</p>}</>
                             )}
                              {!isEditing && <>
                                {p.app === 'instagram' && /story/i.test(p.type) && <button onClick={() => setPickingStoryId(p.reviewId)} className="mr-4 mt-3 text-xs text-[#e7aabb]">{isImageNeeded(p) ? 'Choose / Upload / Generate Image' : 'Change Story Image'}</button>}

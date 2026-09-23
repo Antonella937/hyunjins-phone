@@ -2,3 +2,4 @@
 - [Instagram image confirmation](instagram-image-confirmation.md) — AI output is a preview until Use Image; keep older Gallery data URLs readable.
 - [Instagram Story contacts](instagram-story-contacts.md) — use existing Contacts as Story identities; retain retired Stories as history, not active circles.
 - [Music runtime provider](music-runtime-provider.md) — agent-side music tools cannot power in-app generation; keep disconnected status honest until a server provider is configured.
+- [Echo legacy identity](echo-legacy-identity.md) — map old Echo Antonella references to existing c1 as Nela without renaming Contacts or rewriting stored posts.

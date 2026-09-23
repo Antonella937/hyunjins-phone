@@ -9,6 +9,22 @@ const meta = (proposal: ReviewProposal, key: string): string => text(proposal.me
 const subtype = (proposal: ReviewProposal) => proposal.type.toLowerCase().replace(/[\s_-]+/g, ' ');
 const isRetiredStoryAccount = (name: string) => /^(mar|mira|antonella)(?:\s|$)/i.test(name.trim());
 
+function echoActor(store: PhoneStore, person: string) {
+  const name = person.trim();
+  if (!name || /^(hyune|hyunjin|@hyune)$/i.test(name)) {
+    return { author: store.echoProfile?.displayName || 'hyune', handle: store.echoProfile?.username || '@hyune', contactId: undefined };
+  }
+  const contact = store.contacts.find(candidate =>
+    candidate.id.toLowerCase() === name.toLowerCase() ||
+    candidate.name.toLowerCase() === name.toLowerCase() ||
+    (name.toLowerCase() === 'nela' && candidate.id === 'c1' && candidate.name.toLowerCase() === 'antonella')
+  );
+  if (!contact) throw new Error(`Cannot publish Echo: "${name}" is not an existing Contact.`);
+  const display = contact.id === 'c1' && contact.name.toLowerCase() === 'antonella' ? 'Nela' : contact.name;
+  const handle = store.echoAccountHandles?.[contact.id] || `@${display.toLowerCase().replace(/[^a-z0-9_]/g, '')}`;
+  return { author: display, handle, contactId: contact.id };
+}
+
 function resolveStoryAccount(store: PhoneStore, person: string): { user: string; contactId?: string } {
   const account = person.trim();
   const normalized = account.toLowerCase();
@@ -125,9 +141,54 @@ export function publishActivity(store: PhoneStore, proposals: ReviewProposal[]):
         }
         break;
       case 'echo': {
-        const post = { id, author: person || 'hyune', handle: person ? `@${person.toLowerCase().replace(/\s+/g, '')}` : '@hyune', content, time, likes: 0, reposts: 0, replies: 0 };
-        if (type.includes('draft')) next.echoDrafts.unshift(post);
-        else next.echoPosts.unshift(post);
+        const actor = echoActor(next, person);
+        const targetId = meta(p, 'targetPostId');
+        const target = targetId ? next.echoPosts.find(item => item.id === targetId) : undefined;
+        const needsTarget = ['like', 'save', 'repost', 'reply'].some(action => type.includes(action));
+        if (needsTarget && !target) throw new Error(`Cannot publish Echo ${type}: choose an existing targetPostId.`);
+        const isSelf = !actor.contactId;
+         const targetIsSelf = target && !target.contactId && ['hyune', next.echoProfile?.displayName, next.echoProfile?.username?.replace(/^@/, '')].includes(target.author);
+        if (type.includes('like')) {
+          if (isSelf) {
+            if (!target!.likedByHyunjin && !target!.isLiked) { target!.likedByHyunjin = true; target!.likes += 1; }
+          } else {
+            target!.likes += 1;
+             if (targetIsSelf) next.echoNotifications.unshift({ id, type: 'like', user: actor.handle, contactId: actor.contactId, postId: targetId, text: 'liked your Echo.', time });
+          }
+        } else if (type.includes('save')) {
+          if (!isSelf) throw new Error('Only Hyunjin can save an Echo.');
+          target!.saved = true;
+        } else if (type.includes('repost')) {
+          if (isSelf) {
+             if (!target!.repostedByHyunjin && !target!.isReposted) {
+               target!.repostedByHyunjin = true;
+               target!.reposts += 1;
+               next.echoPosts.unshift({
+                 id, author: next.echoProfile?.username.replace(/^@/, '') || 'hyune',
+                 handle: next.echoProfile?.username || '@hyune', content: '', time,
+                 likes: 0, reposts: 0, replies: 0, isRepost: true,
+                 quotedPostId: targetId, createdAt: new Date().toISOString(), source: 'story-update',
+               });
+             }
+          } else {
+            target!.reposts += 1;
+             if (targetIsSelf) next.echoNotifications.unshift({ id, type: 'repost', user: actor.handle, contactId: actor.contactId, postId: targetId, text: 'reposted your Echo.', time });
+          }
+        } else {
+          const post = { id, ...actor, content, time, createdAt: new Date().toISOString(), likes: 0, reposts: 0, replies: 0, source: 'story-update' as const,
+            imageId: meta(p, 'imageId') || undefined, galleryId: meta(p, 'galleryId') || undefined,
+            location: meta(p, 'location') || undefined, replyToId: type.includes('reply') ? targetId : undefined };
+          if (type.includes('draft')) {
+            if (!isSelf) throw new Error('Only Hyunjin can save an Echo draft.');
+            next.echoDrafts.unshift(post);
+          } else {
+            next.echoPosts.unshift(post);
+            if (post.replyToId) {
+              target!.replies += 1;
+               if (!isSelf && targetIsSelf) next.echoNotifications.unshift({ id: `${id}-notification`, type: 'reply', user: actor.handle, contactId: actor.contactId, postId: targetId, text: 'replied to your Echo.', time });
+            }
+          }
+        }
         break;
       }
       case 'gallery':

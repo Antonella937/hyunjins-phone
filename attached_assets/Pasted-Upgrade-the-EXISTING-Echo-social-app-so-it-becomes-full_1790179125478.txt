@@ -1,0 +1,447 @@
+Upgrade the EXISTING “Echo” social app so it becomes fully interactive instead of a static/decorative Twitter-like screen.
+
+IMPORTANT:
+KEEP the current Echo visual design exactly as much as possible.
+
+I like the existing:
+
+* dark aesthetic
+* typography
+* timeline layout
+* Echo branding
+* bottom navigation
+* post styling
+* profile styling
+* interaction icons
+
+Do NOT redesign Echo.
+Do NOT reset the database.
+Do NOT delete existing content.
+
+The problem is functionality.
+
+CURRENT PROBLEM
+
+Echo currently displays a timeline and navigation, but most elements are decorative and cannot actually be opened or interacted with.
+
+Make the existing app functional.
+
+ECHO POSTS
+
+Every Echo post must be a real persistent record.
+
+Each post should support:
+
+* id
+* author/contact
+* username
+* text
+* date/time
+* replies
+* reposts
+* likes
+* likedByHyunjin
+* repostedByHyunjin
+* saved
+* optional image
+* optional Gallery reference
+* optional quoted post
+* optional replyTo
+* source
+* createdAt
+
+OPEN POST
+
+Tapping anywhere on a post should open a Post Detail screen.
+
+Display:
+
+* author
+* username
+* avatar
+* full post text
+* date/time
+* likes
+* reposts
+* replies
+* optional image
+* quoted post when applicable
+* full reply thread
+
+All existing interaction buttons must work.
+
+LIKE
+
+Make the heart button functional.
+
+Tap:
+♡ → ♥ liked
+
+Tap again:
+♥ → ♡ unliked
+
+Update the like count appropriately and persist the state.
+
+REPOST
+
+Make the repost button functional.
+
+When tapped show:
+
+Repost
+Quote Post
+Cancel
+
+Repost:
+Add the post to Hyunjin’s profile as a repost.
+
+Quote Post:
+Open a composer where Hyunjin can add his own text above the quoted post.
+
+Allow Undo Repost.
+
+Persist all changes.
+
+REPLIES
+
+Make the reply/comment icon functional.
+
+Tapping it should open a reply composer.
+
+Allow Hyunjin to post a fictional reply.
+
+Replies should appear in the Post Detail thread.
+
+Replies must be editable/deletable in Edit Mode.
+
+SAVE
+
+Make Saved functional.
+
+Allow posts to be saved/unsaved.
+
+The bottom navigation → Saved must open a real list containing all currently saved posts.
+
+NEW POST
+
+Make the existing + button functional.
+
+Tap + → open Compose Echo.
+
+Allow:
+
+Text
+Optional image
+Choose from Gallery
+Upload from Phone
+Generate Image with AI
+Optional location
+Optional reply/quote relationship
+
+Buttons:
+
+Post
+Save Draft
+Cancel
+
+Posting should immediately add the new post to the timeline and Hyunjin’s Profile.
+
+DRAFTS
+
+Make the existing Drafts tab fully functional.
+
+Drafts should support:
+
+Create
+Edit
+Delete
+Publish
+
+Save Draft from the composer must actually persist the draft.
+
+Opening a draft should restore its text and attached image.
+
+SEARCH
+
+Make the existing Search tab functional.
+
+Allow searching:
+
+* posts
+* contacts/accounts
+* usernames
+* keywords
+
+Search results should be tappable.
+
+ACTIVITY
+
+Make Activity functional.
+
+Generate/display fictional RP social activity such as:
+
+likes
+replies
+mentions
+reposts
+new interactions
+
+Activity should reference existing Contacts/accounts rather than random disconnected characters whenever possible.
+
+PROFILE
+
+Make Profile functional.
+
+Hyunjin’s Echo profile should show:
+
+* avatar
+* display name
+* @username
+* bio
+* posts
+* replies
+* media
+* likes when appropriate
+
+Allow tabs:
+
+Posts
+Replies
+Media
+Likes
+
+Tapping any post opens Post Detail.
+
+OTHER PROFILES
+
+Tapping another author/avatar/name should open that account’s Echo profile.
+
+Profiles may contain:
+
+Posts
+Replies
+Media
+
+Use existing Contacts as the source of known recurring accounts.
+
+CONTACT / ACCOUNT CLEANUP
+
+The current timeline contains an outdated account:
+
+Antonella / @antocastillo
+
+This should represent the existing Nela contact.
+
+Update the visible identity to:
+
+Display Name: Nela
+
+Do NOT create a second Nela/Antonella contact.
+
+Do not use @antocastillo.
+
+Allow the fictional Echo username for Nela to be edited manually in Edit Mode.
+
+Do not automatically create Mar, Mira or Noah as Echo accounts unless they are explicitly reintroduced through future Canon/Story Updates.
+
+ESTABLISHED ACCOUNTS
+
+Allow Echo accounts to be associated with:
+
+Nela
+Bang Chan
+Lee Know
+Changbin
+Han
+Felix
+Seungmin
+I.N
+Hyunjin / hyune
+
+Do not automatically generate posts for all of them.
+
+They should post only when activity exists.
+
+CONTACT LINKING
+
+Echo accounts should reference the existing Contacts database.
+
+If a Contact display name changes, Echo should reflect the updated display name.
+
+Do not maintain a separate hardcoded list of names.
+
+IMAGES / MEDIA
+
+Echo posts may contain actual images.
+
+Allow:
+
+Choose from Gallery
+Upload from Phone
+Generate Image with AI
+
+Tapping an image should open it full-screen.
+
+AI image generation must generate a real image rather than a placeholder.
+
+If quota is exhausted, display the real error.
+
+QUOTE POSTS
+
+Support actual quoted posts.
+
+A Quote Post should visually embed the original post and remain linked to it.
+
+MENTIONS
+
+Support @mentions of established Echo accounts.
+
+Mentions should be tappable and open the account profile.
+
+EDIT MODE
+
+When Edit Mode is ON, allow manual management of Echo content.
+
+For each post provide:
+
+Edit Post
+Delete Post
+Change Author
+Edit Date/Time
+Edit Interaction Counts
+Add/Replace Image
+Choose from Gallery
+Generate Image
+Edit Replies
+
+Also provide:
+
+* New Echo Post
+
+Allow me to manually create fictional timeline activity.
+
+Deleting an Echo post should require confirmation.
+
+STORY UPDATE / GENERATE DAY
+
+Integrate Echo with Story Update.
+
+Generate Day may propose:
+
+* Hyunjin posts something
+* Hyunjin likes a post
+* Hyunjin saves something
+* Hyunjin reposts something
+* another established contact posts
+* another contact replies to Hyunjin
+* Hyunjin drafts something but does not publish it
+
+Only generate social activity when it naturally fits the Story Update.
+
+Do not force Echo activity every day.
+
+Do not invent major relationship developments through Echo.
+
+REVIEW
+
+All AI-generated Echo activity must appear in Review before being committed.
+
+Allow:
+
+Approve
+Edit
+Reject
+
+Approved activity must use the SAME persistent Echo database as manually created activity.
+
+REALISTIC SOCIAL FEED
+
+Echo should feel like an actual small social network rather than a feed entirely about Nela.
+
+Hyunjin’s timeline should naturally contain:
+
+* members
+* art
+* photography
+* music
+* random observations
+* everyday thoughts
+* jokes
+* work-related thoughts
+* posts from friends
+* occasional Nela activity
+
+Do not make every Echo post poetic, introspective or romantic.
+
+Some posts can be extremely mundane or silly.
+
+NOTIFICATIONS / ACTIVITY
+
+When an established account interacts with Hyunjin’s post, optionally create a corresponding Activity entry.
+
+Example:
+
+Felix liked your Echo.
+
+Nela replied to your Echo.
+
+Han reposted your Echo.
+
+These should be fictional RP interactions.
+
+PERSISTENCE
+
+All posts, likes, saves, reposts, replies, drafts, images and profile data must persist after:
+
+* navigating away
+* refreshing
+* closing the PWA
+* reopening the PWA
+
+Reuse the existing persistent database.
+
+Do NOT create a disconnected Echo-only temporary state.
+
+TEST BEFORE REPORTING SUCCESS
+
+TEST 1:
+Tap the heart on an existing post.
+Verify the icon/count changes.
+Refresh.
+Verify the liked state remains.
+
+TEST 2:
+Tap an existing post.
+Verify Post Detail opens.
+
+TEST 3:
+Reply to an existing post.
+Verify the reply appears in its thread.
+Refresh.
+Verify it remains.
+
+TEST 4:
+Tap +.
+Create a new Echo post.
+Publish.
+Verify it appears in Home and Profile.
+
+TEST 5:
+Save a post.
+Open Saved.
+Verify it appears.
+
+TEST 6:
+Create a Draft.
+Open Drafts.
+Edit it.
+Publish it.
+Verify it moves from Drafts to the timeline.
+
+TEST 7:
+Tap another account.
+Verify its Profile opens.
+
+Do not consider Echo complete merely because the navigation and interaction icons render.
+
+Echo is complete only when the user can actually open, post, reply, like, repost, save, search, edit and navigate through persistent content.

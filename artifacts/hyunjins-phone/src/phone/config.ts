@@ -38,8 +38,16 @@ export type CallRecord = { id: string; contactId?: string; number?: string; name
 export type BrowserTab = { id: string; url: string; title: string; active?: boolean; private?: boolean };
 export type BrowserHistory = { id: string; url: string; title: string; time: string };
 export type BrowserBookmark = { id: string; url: string; title: string };
-export type EchoPost = { id: string; author: string; handle: string; content: string; time: string; likes: number; reposts: number; replies: number; isRepost?: boolean; isLiked?: boolean; isReposted?: boolean };
-export type EchoNotification = { id: string; type: 'like' | 'repost' | 'reply' | 'mention'; user: string; text: string; time: string };
+export type EchoPost = {
+  id: string; author: string; handle: string; content: string; time: string;
+  likes: number; reposts: number; replies: number;
+  contactId?: string; createdAt?: string; likedByHyunjin?: boolean; repostedByHyunjin?: boolean; saved?: boolean;
+  imageId?: string; dataUrl?: string; galleryId?: string; location?: string;
+  quotedPostId?: string; replyToId?: string; source?: 'manual' | 'ai-generated' | 'story-update' | 'seed';
+  isRepost?: boolean; isLiked?: boolean; isReposted?: boolean;
+};
+export type EchoNotification = { id: string; type: 'like' | 'repost' | 'reply' | 'mention'; user: string; text: string; time: string; contactId?: string; postId?: string };
+export type EchoProfile = { displayName: string; username: string; bio: string };
 export type StudioProject = { id: string; title: string; status: 'demo' | 'unfinished' | 'finished' | 'idea'; updated: string; metadata: string; duration?: string; hasAudio?: boolean };
 export type Place = { id: string; name: string; category: string; location: string; notes?: string; saved?: boolean };
 export type InstagramStory = {
@@ -188,14 +196,16 @@ export const seedPhone = {
     { id: 'b2', url: 'https://are.na', title: 'Are.na' }
   ] as BrowserBookmark[],
   echoPosts: [
-    { id: 'ep1', author: 'hyune', handle: '@hyune', content: 'the light hitting the building across the street right now.', time: '2h', likes: 110, reposts: 12, replies: 4 },
-    { id: 'ep2', author: 'hyune', handle: '@hyune', content: 'everything feels a little too loud today.', time: 'yesterday', likes: 450, reposts: 43, replies: 12 },
-    { id: 'ep3', author: 'Antonella', handle: '@antocastillo', content: 'waking up to rain.', time: '4h', likes: 89, reposts: 3, replies: 1, isReposted: true }
+    { id: 'ep1', author: 'hyune', handle: '@hyune', content: 'the light hitting the building across the street right now.', time: '2h', likes: 110, reposts: 12, replies: 4, source: 'seed' },
+    { id: 'ep2', author: 'hyune', handle: '@hyune', content: 'everything feels a little too loud today.', time: 'yesterday', likes: 450, reposts: 43, replies: 12, source: 'seed' },
+    { id: 'ep3', author: 'Nela', contactId: 'c1', handle: '@nela', content: 'waking up to rain.', time: '4h', likes: 89, reposts: 3, replies: 1, isReposted: true, source: 'seed' }
   ] as EchoPost[],
   echoNotifications: [
     { id: 'en1', type: 'like', user: '@mira', text: 'liked your post.', time: '2h' },
-    { id: 'en2', type: 'reply', user: '@antocastillo', text: 'it is very loud here too.', time: 'yesterday' }
+    { id: 'en2', type: 'reply', user: '@nela', contactId: 'c1', text: 'it is very loud here too.', time: 'yesterday' }
   ] as EchoNotification[],
+  echoAccountHandles: { c1: '@nela' } as Record<string, string>,
+  echoProfile: { displayName: 'hyune', username: '@hyune', bio: 'small evidence of a life in motion.' } as EchoProfile,
   studioProjects: [
     { id: 'sp1', title: 'after rain (demo 4)', status: 'demo', updated: 'Today, 14:20', metadata: '120 BPM · B minor · piano, strings', duration: '2:14', hasAudio: false },
     { id: 'sp2', title: 'untitled loop', status: 'idea', updated: '24 May', metadata: 'synth pad, reverb', duration: '0:45', hasAudio: false },
