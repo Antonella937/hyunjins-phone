@@ -1,3 +1,4 @@
 - [Raw audio OpenAPI contract](raw-audio-openapi.md) — binary format codegen requires a DOM Blob type unavailable to the server schema library; keep raw upload contracts compatible.
 - [Instagram image confirmation](instagram-image-confirmation.md) — AI output is a preview until Use Image; keep older Gallery data URLs readable.
 - [Instagram Story contacts](instagram-story-contacts.md) — use existing Contacts as Story identities; retain retired Stories as history, not active circles.
+- [Music runtime provider](music-runtime-provider.md) — agent-side music tools cannot power in-app generation; keep disconnected status honest until a server provider is configured.

@@ -1,0 +1,402 @@
+Add a new REAL AI music-generation feature to the existing Living Phone.
+
+IMPORTANT:
+Do NOT modify or merge this feature with Voice Memos.
+
+Voice Memos must remain a separate app/collection used for spoken recordings.
+
+Create a completely separate music collection called:
+
+ORIGINAL TRACKS
+
+This collection is exclusively for original AI-generated music, demos, instrumentals, loops and song ideas belonging to this fictional roleplay universe.
+
+Do not redesign the rest of the phone.
+Do not delete existing data.
+Preserve Voice Memos, Gallery, Instagram, Contacts, Canon, Story Updates and all existing content.
+
+ORIGINAL TRACKS
+
+Inside the existing Music or Studio app, create a dedicated section/folder:
+
+Original Tracks
+
+It should visually feel like a private collection of unfinished and finished music projects.
+
+Each track should support:
+
+* id
+* title
+* cover artwork
+* actual persistent audio file
+* duration
+* creation date/time
+* type
+* status
+* genre/style
+* mood
+* generation prompt
+* lyrics when applicable
+* instrumental/vocal mode
+* notes
+* favorite
+* related Story Update/event
+* source: AI Generated
+* createdAt
+
+TRACK TYPES
+
+Support:
+
+Full Song
+Demo
+Instrumental
+Loop / Idea
+
+TRACK STATUS
+
+Support:
+
+Idea
+Work in Progress
+Demo
+Finished
+
+NEW AI TRACK
+
+Add:
+
+* New AI Track
+
+When tapped, open an AI music-generation interface.
+
+Allow me to enter:
+
+Title — optional
+Prompt
+Genre / Style
+Mood
+Instrumental or Vocals
+Approximate duration
+Lyrics — optional
+Additional notes
+
+Include:
+
+✨ Generate Track
+
+REAL MUSIC GENERATION
+
+IMPORTANT:
+Generate an ACTUAL playable music/audio file.
+
+Do not create only:
+
+* metadata
+* a fake waveform
+* a title
+* lyrics
+* a visual track card
+* a simulated player
+
+Before implementing generation, inspect which audio/music generation capabilities are actually available in the current Replit environment/project.
+
+The existing Voice Memo system already uses Replit-supported voice/audio functionality. However, do NOT assume that text-to-speech is capable of generating music.
+
+Determine whether the currently available Replit AI/audio services support REAL music generation.
+
+If real music generation is available, integrate it securely.
+
+If it is NOT available, create the Original Tracks interface and provider integration layer, but clearly display:
+
+“Music AI Provider Not Connected”
+
+Do NOT pretend a song was generated.
+
+AI MUSIC MODES
+
+Support:
+
+1. Instrumental
+    Generate music without vocals.
+2. Song with Synthetic Vocals
+    Generate original music with an original fictional synthetic singing voice.
+3. Demo
+    Generate something intentionally rougher or unfinished, like a private musical sketch.
+4. Loop / Idea
+    Generate a shorter musical fragment suitable for experimenting.
+
+VOCALS
+
+Any generated singing voice must be an ORIGINAL fictional synthetic voice.
+
+Do NOT clone, imitate, reproduce or attempt to match Hyunjin’s real singing voice or speaking voice.
+
+Do NOT clone or imitate any other real artist.
+
+Music prompts may describe general musical characteristics such as:
+
+dreamy
+dark
+melancholic
+alternative
+R&B
+rock
+electronic
+ambient
+distorted guitar
+soft piano
+cinematic
+minimal
+experimental
+
+Do not instruct the system to imitate a specific living artist’s voice.
+
+GENERATION FLOW
+
+Use:
+
+Prompt
+↓
+Generate Track
+↓
+Generating…
+↓
+REAL audio result
+↓
+Preview
+↓
+Save / Regenerate / Delete
+
+Do not save unsuccessful generations as finished tracks.
+
+PREVIEW
+
+After successful generation, show:
+
+▶ Play
+Pause
+Seek
+Duration
+
+Then:
+
+Save to Original Tracks
+Regenerate
+Discard
+
+Only save after I confirm.
+
+PLAYER
+
+Every saved Original Track must have a functional audio player.
+
+Support:
+
+Play
+Pause
+Seek
+Restart
+Current time
+Total duration
+Playback progress
+Playback speed where technically appropriate
+
+Only one track should play at a time.
+
+Pressing Play MUST produce real audible music.
+
+STORAGE
+
+Generated tracks must be stored persistently.
+
+Do not permanently rely on:
+
+blob:
+temporary object URLs
+temporary generation URLs that expire
+
+Store the resulting audio using persistent project/object storage and save a stable reference in the Original Track record.
+
+Tracks must remain playable after:
+
+* navigating away
+* refreshing
+* closing the installed PWA
+* reopening the PWA
+
+ORIGINAL TRACKS LIBRARY
+
+Create a dedicated library view showing saved tracks.
+
+Allow filtering by:
+
+All
+Songs
+Demos
+Instrumentals
+Loops
+Favorites
+
+Allow sorting by:
+
+Newest
+Oldest
+Title
+
+Each track card should show:
+
+Cover
+Title
+Type
+Status
+Duration
+Date
+Play button
+
+TRACK DETAIL
+
+Tapping a track opens a detail screen containing:
+
+Cover artwork
+Title
+Player
+Lyrics
+Prompt
+Genre/style
+Mood
+Status
+Date
+Notes
+
+EDIT MODE
+
+When Edit Mode is ON allow:
+
+Rename Track
+Edit Lyrics
+Edit Notes
+Edit Genre
+Edit Mood
+Change Status
+Favorite / Unfavorite
+Replace Cover
+Generate Cover with AI
+Delete Track
+
+Do not regenerate the audio simply because metadata was edited.
+
+COVER ART
+
+Allow:
+
+Choose from Gallery
+Upload from Phone
+✨ Generate Cover with AI
+
+AI-generated cover artwork must use the existing image-generation system.
+
+Image generation must be separate from music generation so a cover-generation quota error does not destroy or invalidate an already generated song.
+
+STORY UPDATE / GENERATE DAY
+
+Integrate Original Tracks with Story Update.
+
+Generate Day may PROPOSE a music idea when it naturally fits the story.
+
+Example proposal:
+
+ORIGINAL TRACK IDEA
+
+Title: Untitled 04
+Type: Demo
+Mood: restless / dreamy
+Concept: distorted guitar underneath a soft ambient progression
+
+However:
+
+DO NOT automatically generate the audio.
+
+After approval, save it as:
+
+Concept / Idea
+
+Then provide:
+
+✨ Generate Track
+
+I must explicitly press Generate Track before music-generation credits are consumed.
+
+If I never generate it, it remains a music concept rather than pretending an audio file exists.
+
+LYRICS
+
+For vocal songs allow:
+
+Write Lyrics Myself
+Generate Lyrics with AI
+Edit Lyrics
+
+Always show AI-generated lyrics for review/editing BEFORE generating the final vocal track.
+
+Do not automatically generate romantic lyrics about Nela unless the Story Update or my prompt specifically establishes that context.
+
+INTEGRATION
+
+Original Tracks may optionally be referenced elsewhere in the fictional phone.
+
+Allow:
+
+Share to Messages
+Add snippet to Instagram Story
+Attach to Diary
+Save audio reference to Files
+
+Do not duplicate the underlying audio file unnecessarily.
+
+VOICE MEMOS SEPARATION
+
+Voice Memos and Original Tracks MUST remain completely distinct collections.
+
+Voice Memos:
+spoken recordings, reminders, private thoughts.
+
+Original Tracks:
+music, songs, demos, instrumentals and loops.
+
+Never display Original Tracks inside Voice Memos.
+
+Never display Voice Memos inside Original Tracks.
+
+QUOTA / ERRORS
+
+If music generation quota is exhausted, show the real provider error.
+
+If no music provider is available, show:
+
+“Music AI Provider Not Connected”
+
+If generation fails, do NOT create a fake playable track.
+
+Never show a successful generation state until a real audio file exists.
+
+TEST BEFORE REPORTING SUCCESS
+
+Generate ONE short test instrumental.
+
+Prompt:
+“Dreamy late-night instrumental with ambient synth textures, soft piano, subtle distorted guitar and a slightly restless atmosphere. Intimate and unfinished, like a private demo recorded after midnight.”
+
+Verify:
+
+1. A REAL music file is returned.
+2. Preview Play produces audible music.
+3. Save it to Original Tracks.
+4. Verify it appears in Original Tracks.
+5. Play it from the library.
+6. Refresh the PWA.
+7. Play it again.
+8. Verify the audio still works.
+9. Verify it does NOT appear in Voice Memos.
+
+Do not consider Original Tracks complete until a real generated music file can be saved and played successfully.

@@ -12,7 +12,131 @@ tags:
     description: Health operations
   - name: story
     description: Living Phone story generation
+  - name: music
+    description: Original Tracks music generation
 paths:
+  /music/provider:
+    get:
+      operationId: getMusicProvider
+      tags: [music]
+      summary: Check whether a real music provider is connected
+      responses:
+        "200":
+          description: Provider status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MusicProviderStatus"
+  /music/generate:
+    post:
+      operationId: generateOriginalTrack
+      tags: [music]
+      summary: Compose and persist a real music preview
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MusicGenerationInput"
+      responses:
+        "200":
+          description: Stored audio preview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MusicGenerationResult"
+        "400":
+          description: Invalid request
+        "503":
+          description: Music provider disconnected or failed
+  /music/lyrics:
+    post:
+      operationId: generateOriginalLyrics
+      tags: [music]
+      summary: Draft optional lyrics for review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MusicLyricsInput"
+      responses:
+        "200":
+          description: Editable draft lyrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MusicLyricsResult"
+        "503":
+          description: Lyrics provider unavailable
+  /music/audio/{audioId}:
+    get:
+      operationId: getOriginalTrackAudio
+      tags: [music]
+      summary: Stream saved original audio with byte-range support
+      parameters:
+        - in: path
+          name: audioId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Audio bytes
+          content:
+            audio/mpeg:
+              schema:
+                $ref: "#/components/schemas/MusicAudioFile"
+        "404":
+          description: Audio not found
+  /music/audio/{audioId}/preview:
+    delete:
+      operationId: discardOriginalTrackPreview
+      tags: [music]
+      summary: Discard an unconfirmed generated audio preview
+      parameters:
+        - in: path
+          name: audioId
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MusicPreviewAction"
+      responses:
+        "204":
+          description: Preview deleted
+        "403":
+          description: Invalid token or already confirmed
+  /music/audio/{audioId}/confirm:
+    post:
+      operationId: confirmOriginalTrackPreview
+      tags: [music]
+      summary: Mark a generated audio preview as saved after user confirmation
+      parameters:
+        - in: path
+          name: audioId
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MusicPreviewAction"
+      responses:
+        "200":
+          description: Confirmed
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [confirmed]
+                properties:
+                  confirmed: { type: boolean }
+        "403":
+          description: Invalid token or already confirmed
   /healthz:
     get:
       operationId: healthCheck
@@ -209,6 +333,52 @@ paths:
           description: Audio not found
 components:
   schemas:
+    MusicAudioFile:
+      type: string
+      description: Original Tracks MP3 audio bytes
+    MusicProviderStatus:
+      type: object
+      required: [connected, label]
+      properties:
+        connected: { type: boolean }
+        label: { type: string }
+    MusicGenerationInput:
+      type: object
+      required: [prompt, mode, durationSeconds]
+      properties:
+        prompt: { type: string, minLength: 5, maxLength: 1500 }
+        mode: { type: string, enum: [instrumental, vocals, demo, loop] }
+        durationSeconds: { type: integer, minimum: 3, maximum: 600 }
+        genre: { type: string, maxLength: 120 }
+        mood: { type: string, maxLength: 120 }
+        lyrics: { type: string, maxLength: 5000 }
+        notes: { type: string, maxLength: 1000 }
+    MusicGenerationResult:
+      type: object
+      required: [audioId, durationSeconds, contentType, previewToken]
+      properties:
+        audioId: { type: string, format: uuid }
+        durationSeconds: { type: number }
+        contentType: { type: string }
+        previewToken: { type: string, description: Opaque one-time token for confirming or discarding this preview }
+    MusicPreviewAction:
+      type: object
+      required: [previewToken]
+      properties:
+        previewToken: { type: string, minLength: 32, maxLength: 128 }
+    MusicLyricsInput:
+      type: object
+      required: [prompt]
+      properties:
+        prompt: { type: string, minLength: 5, maxLength: 1500 }
+        genre: { type: string, maxLength: 120 }
+        mood: { type: string, maxLength: 120 }
+        context: { type: string, maxLength: 1000 }
+    MusicLyricsResult:
+      type: object
+      required: [lyrics]
+      properties:
+        lyrics: { type: string }
     VoiceAudioFile:
       type: string
       description: Raw audio bytes, up to 15 MB

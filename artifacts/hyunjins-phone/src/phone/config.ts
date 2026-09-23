@@ -8,8 +8,8 @@ export const characterProfile = {
   tagline: 'small evidence of a life in motion',
 };
 
-export type PhoneMessage = { id: string; person: string; initials: string; preview: string; time: string; unread?: number; pinned?: boolean; color: string; messages: { from: 'me' | 'them'; text: string; time: string; kind?: 'photo' | 'voice' }[] };
-export type DiaryEntry = { id: string; date: string; title: string; mood: string; body: string };
+export type PhoneMessage = { id: string; person: string; initials: string; preview: string; time: string; unread?: number; pinned?: boolean; color: string; messages: { from: 'me' | 'them'; text: string; time: string; kind?: 'photo' | 'voice' | 'music'; audioTrackId?: string }[] };
+export type DiaryEntry = { id: string; date: string; title: string; mood: string; body: string; audioTrackId?: string };
 export type QuickNote = { id: string; text: string; time: string; color: string };
 export type CalendarEvent = { id: string; day: number; title: string; time: string; kind: string };
 export type Contact = {
@@ -33,7 +33,7 @@ export type VoiceMemo = {
 };
 export type Note = { id: string; title: string; meta: string; color: string; body: string };
 export type AppNotification = { id: string; icon: string; title: string; sub: string; color: string; time: string };
-export type FileItem = { id: string; name: string; folder: string; type: string; date: string };
+export type FileItem = { id: string; name: string; folder: string; type: string; date: string; audioTrackId?: string };
 export type CallRecord = { id: string; contactId?: string; number?: string; name?: string; time: string; duration?: string; missed?: boolean; type: 'audio' | 'video' | 'voicemail' };
 export type BrowserTab = { id: string; url: string; title: string; active?: boolean; private?: boolean };
 export type BrowserHistory = { id: string; url: string; title: string; time: string };
@@ -46,12 +46,21 @@ export type InstagramStory = {
   id: string; user: string; caption: string; time: string; dataUrl?: string; imageId?: string;
   contactId?: string; date?: string; createdAt?: string; expiresAt?: string; viewed?: boolean;
   source?: 'ai-generated' | 'gallery' | 'upload' | 'manual'; imagePrompt?: string; location?: string;
-  audience?: 'public' | 'close-friends'; taggedContactIds?: string[];
+  audience?: 'public' | 'close-friends'; taggedContactIds?: string[]; audioTrackId?: string;
 };
 export type InstagramProfile = { displayName: string; username: string; bio: string; location: string; photoDataUrl?: string; imageId?: string };
 export type InstagramHighlight = { id: string; name: string; storyIds: string[] };
 export type MusicActivity = { id: string; title: string; content: string; time: string; source?: 'ai-generated' };
 export type MusicPlaylist = { id: string; name: string; songs: string[]; description?: string; artwork?: string };
+export type OriginalTrack = {
+  id: string; title: string; coverImageId?: string; audioId?: string; durationSeconds?: number;
+  date: string; type: 'Full Song' | 'Demo' | 'Instrumental' | 'Loop / Idea';
+  status: 'Idea' | 'Work in Progress' | 'Demo' | 'Finished';
+  genre: string; mood: string; prompt: string; lyrics: string;
+  mode: 'instrumental' | 'vocals' | 'demo' | 'loop';
+  notes: string; favorite: boolean; relatedStoryUpdate?: string;
+  source: 'AI Generated' | 'Story Update' | 'Manual Idea'; createdAt: string;
+};
 
 export type Canon = {
   character: string;
@@ -207,6 +216,7 @@ export const seedPhone = {
     { id: 'playlist-memory-14', name: 'memory 14', songs: ['Pink + White', 'The Louvre', 'Garden Song', 'Mystery of Love', 'Nights'] },
   ] as MusicPlaylist[],
   musicActivity: [] as MusicActivity[],
+  originalTracks: [] as OriginalTrack[],
   publishedProposalIds: [] as string[],
   canon: seedCanon
 };

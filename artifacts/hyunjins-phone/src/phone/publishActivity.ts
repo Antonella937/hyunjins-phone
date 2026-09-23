@@ -156,7 +156,19 @@ export function publishActivity(store: PhoneStore, proposals: ReviewProposal[]):
         });
         break;
       case 'music':
-        next.musicActivity.unshift({ id, title, content, time, source: 'ai-generated' });
+        if (type.includes('original track')) {
+          const requestedType = meta(p, 'trackType');
+          const trackType = (['Full Song', 'Demo', 'Instrumental', 'Loop / Idea'].includes(requestedType) ? requestedType : 'Demo') as 'Full Song' | 'Demo' | 'Instrumental' | 'Loop / Idea';
+          next.originalTracks = [{
+            id, title, date: time, type: trackType, status: 'Idea',
+            genre: meta(p, 'genre'), mood: meta(p, 'mood'), prompt: meta(p, 'prompt') || content,
+            lyrics: meta(p, 'lyrics'), mode: trackType === 'Instrumental' ? 'instrumental' : trackType === 'Loop / Idea' ? 'loop' : trackType === 'Full Song' ? 'vocals' : 'demo',
+            notes: content, favorite: false, relatedStoryUpdate: meta(p, 'relatedStoryUpdate') || undefined,
+            source: 'Story Update', createdAt: new Date().toISOString(),
+          }, ...(next.originalTracks || [])];
+        } else {
+          next.musicActivity.unshift({ id, title, content, time, source: 'ai-generated' });
+        }
         break;
       case 'studio':
         next.studioProjects.unshift({ id, title, metadata: content, updated: time, status: type.includes('demo') ? 'demo' : 'idea', hasAudio: false });

@@ -20,7 +20,14 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  ConfirmOriginalTrackPreview200,
   HealthStatus,
+  MusicGenerationInput,
+  MusicGenerationResult,
+  MusicLyricsInput,
+  MusicLyricsResult,
+  MusicPreviewAction,
+  MusicProviderStatus,
   ProviderStatus,
   StoryGenerationInput,
   StoryGenerationResult,
@@ -59,6 +66,514 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetMusicProviderUrl = () => {
+
+
+
+
+  return `/api/music/provider`
+}
+
+/**
+ * @summary Check whether a real music provider is connected
+ */
+export const getMusicProvider = async ( options?: Parameters<typeof customFetch>[1]): Promise<MusicProviderStatus> => {
+
+  return customFetch<MusicProviderStatus>(getGetMusicProviderUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetMusicProviderQueryKey = () => {
+    return [
+    `/api/music/provider`
+    ] as const;
+    }
+
+
+export const getGetMusicProviderQueryOptions = <TData = Awaited<ReturnType<typeof getMusicProvider>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMusicProvider>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMusicProviderQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMusicProvider>>> = ({ signal }) => getMusicProvider({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMusicProvider>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetMusicProviderQueryResult = NonNullable<Awaited<ReturnType<typeof getMusicProvider>>>
+export type GetMusicProviderQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Check whether a real music provider is connected
+ */
+
+export function useGetMusicProvider<TData = Awaited<ReturnType<typeof getMusicProvider>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMusicProvider>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetMusicProviderQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGenerateOriginalTrackUrl = () => {
+
+
+
+
+  return `/api/music/generate`
+}
+
+/**
+ * @summary Compose and persist a real music preview
+ */
+export const generateOriginalTrack = async (musicGenerationInput: MusicGenerationInput, options?: Parameters<typeof customFetch>[1]): Promise<MusicGenerationResult> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<MusicGenerationResult>(getGenerateOriginalTrackUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(musicGenerationInput)
+  }
+);}
+
+
+
+
+
+export const getGenerateOriginalTrackMutationKey = () => ['generateOriginalTrack'] as const;
+
+export const getGenerateOriginalTrackMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateOriginalTrack>>, TError,GenerateOriginalTrackMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generateOriginalTrack>>, TError,GenerateOriginalTrackMutationVariables, TContext> => {
+
+const mutationKey = getGenerateOriginalTrackMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateOriginalTrack>>, GenerateOriginalTrackMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  generateOriginalTrack(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GenerateOriginalTrackMutationResult = NonNullable<Awaited<ReturnType<typeof generateOriginalTrack>>>
+    export type GenerateOriginalTrackMutationBody = BodyType<MusicGenerationInput>
+    export type GenerateOriginalTrackMutationError = ErrorType<void>
+    export type GenerateOriginalTrackMutationVariables = {data: BodyType<MusicGenerationInput>}
+
+    /**
+ * @summary Compose and persist a real music preview
+ */
+export const useGenerateOriginalTrack = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateOriginalTrack>>, TError,GenerateOriginalTrackMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof generateOriginalTrack>>,
+        TError,
+        GenerateOriginalTrackMutationVariables,
+        TContext
+      > => {
+      return useMutation(getGenerateOriginalTrackMutationOptions(options));
+    }
+
+export const getGenerateOriginalLyricsUrl = () => {
+
+
+
+
+  return `/api/music/lyrics`
+}
+
+/**
+ * @summary Draft optional lyrics for review
+ */
+export const generateOriginalLyrics = async (musicLyricsInput: MusicLyricsInput, options?: Parameters<typeof customFetch>[1]): Promise<MusicLyricsResult> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<MusicLyricsResult>(getGenerateOriginalLyricsUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(musicLyricsInput)
+  }
+);}
+
+
+
+
+
+export const getGenerateOriginalLyricsMutationKey = () => ['generateOriginalLyrics'] as const;
+
+export const getGenerateOriginalLyricsMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateOriginalLyrics>>, TError,GenerateOriginalLyricsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generateOriginalLyrics>>, TError,GenerateOriginalLyricsMutationVariables, TContext> => {
+
+const mutationKey = getGenerateOriginalLyricsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateOriginalLyrics>>, GenerateOriginalLyricsMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  generateOriginalLyrics(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GenerateOriginalLyricsMutationResult = NonNullable<Awaited<ReturnType<typeof generateOriginalLyrics>>>
+    export type GenerateOriginalLyricsMutationBody = BodyType<MusicLyricsInput>
+    export type GenerateOriginalLyricsMutationError = ErrorType<void>
+    export type GenerateOriginalLyricsMutationVariables = {data: BodyType<MusicLyricsInput>}
+
+    /**
+ * @summary Draft optional lyrics for review
+ */
+export const useGenerateOriginalLyrics = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateOriginalLyrics>>, TError,GenerateOriginalLyricsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof generateOriginalLyrics>>,
+        TError,
+        GenerateOriginalLyricsMutationVariables,
+        TContext
+      > => {
+      return useMutation(getGenerateOriginalLyricsMutationOptions(options));
+    }
+
+export const getGetOriginalTrackAudioUrl = (audioId: string,) => {
+
+
+
+
+  return `/api/music/audio/${audioId}`
+}
+
+/**
+ * @summary Stream saved original audio with byte-range support
+ */
+export const getOriginalTrackAudio = async (audioId: string, options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getGetOriginalTrackAudioUrl(audioId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetOriginalTrackAudioQueryKey = (audioId: string,) => {
+    return [
+    `/api/music/audio/${audioId}`
+    ] as const;
+    }
+
+
+export const getGetOriginalTrackAudioQueryOptions = <TData = Awaited<ReturnType<typeof getOriginalTrackAudio>>, TError = ErrorType<void>>(audioId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOriginalTrackAudio>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetOriginalTrackAudioQueryKey(audioId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getOriginalTrackAudio>>> = ({ signal }) => getOriginalTrackAudio(audioId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: audioId !== null && audioId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getOriginalTrackAudio>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetOriginalTrackAudioQueryResult = NonNullable<Awaited<ReturnType<typeof getOriginalTrackAudio>>>
+export type GetOriginalTrackAudioQueryError = ErrorType<void>
+
+
+/**
+ * @summary Stream saved original audio with byte-range support
+ */
+
+export function useGetOriginalTrackAudio<TData = Awaited<ReturnType<typeof getOriginalTrackAudio>>, TError = ErrorType<void>>(
+ audioId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOriginalTrackAudio>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetOriginalTrackAudioQueryOptions(audioId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getDiscardOriginalTrackPreviewUrl = (audioId: string,) => {
+
+
+
+
+  return `/api/music/audio/${audioId}/preview`
+}
+
+/**
+ * @summary Discard an unconfirmed generated audio preview
+ */
+export const discardOriginalTrackPreview = async (audioId: string,
+    musicPreviewAction: MusicPreviewAction, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<void>(getDiscardOriginalTrackPreviewUrl(audioId),
+  {
+    ...options,
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(musicPreviewAction)
+  }
+);}
+
+
+
+
+
+export const getDiscardOriginalTrackPreviewMutationKey = () => ['discardOriginalTrackPreview'] as const;
+
+export const getDiscardOriginalTrackPreviewMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof discardOriginalTrackPreview>>, TError,DiscardOriginalTrackPreviewMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof discardOriginalTrackPreview>>, TError,DiscardOriginalTrackPreviewMutationVariables, TContext> => {
+
+const mutationKey = getDiscardOriginalTrackPreviewMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof discardOriginalTrackPreview>>, DiscardOriginalTrackPreviewMutationVariables> = (props) => {
+          const {audioId,data} = props ?? {};
+
+          return  discardOriginalTrackPreview(audioId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DiscardOriginalTrackPreviewMutationResult = NonNullable<Awaited<ReturnType<typeof discardOriginalTrackPreview>>>
+    export type DiscardOriginalTrackPreviewMutationBody = BodyType<MusicPreviewAction>
+    export type DiscardOriginalTrackPreviewMutationError = ErrorType<void>
+    export type DiscardOriginalTrackPreviewMutationVariables = {audioId: string;data: BodyType<MusicPreviewAction>}
+
+    /**
+ * @summary Discard an unconfirmed generated audio preview
+ */
+export const useDiscardOriginalTrackPreview = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof discardOriginalTrackPreview>>, TError,DiscardOriginalTrackPreviewMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof discardOriginalTrackPreview>>,
+        TError,
+        DiscardOriginalTrackPreviewMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDiscardOriginalTrackPreviewMutationOptions(options));
+    }
+
+export const getConfirmOriginalTrackPreviewUrl = (audioId: string,) => {
+
+
+
+
+  return `/api/music/audio/${audioId}/confirm`
+}
+
+/**
+ * @summary Mark a generated audio preview as saved after user confirmation
+ */
+export const confirmOriginalTrackPreview = async (audioId: string,
+    musicPreviewAction: MusicPreviewAction, options?: Parameters<typeof customFetch>[1]): Promise<ConfirmOriginalTrackPreview200> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ConfirmOriginalTrackPreview200>(getConfirmOriginalTrackPreviewUrl(audioId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(musicPreviewAction)
+  }
+);}
+
+
+
+
+
+export const getConfirmOriginalTrackPreviewMutationKey = () => ['confirmOriginalTrackPreview'] as const;
+
+export const getConfirmOriginalTrackPreviewMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmOriginalTrackPreview>>, TError,ConfirmOriginalTrackPreviewMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof confirmOriginalTrackPreview>>, TError,ConfirmOriginalTrackPreviewMutationVariables, TContext> => {
+
+const mutationKey = getConfirmOriginalTrackPreviewMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof confirmOriginalTrackPreview>>, ConfirmOriginalTrackPreviewMutationVariables> = (props) => {
+          const {audioId,data} = props ?? {};
+
+          return  confirmOriginalTrackPreview(audioId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ConfirmOriginalTrackPreviewMutationResult = NonNullable<Awaited<ReturnType<typeof confirmOriginalTrackPreview>>>
+    export type ConfirmOriginalTrackPreviewMutationBody = BodyType<MusicPreviewAction>
+    export type ConfirmOriginalTrackPreviewMutationError = ErrorType<void>
+    export type ConfirmOriginalTrackPreviewMutationVariables = {audioId: string;data: BodyType<MusicPreviewAction>}
+
+    /**
+ * @summary Mark a generated audio preview as saved after user confirmation
+ */
+export const useConfirmOriginalTrackPreview = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmOriginalTrackPreview>>, TError,ConfirmOriginalTrackPreviewMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof confirmOriginalTrackPreview>>,
+        TError,
+        ConfirmOriginalTrackPreviewMutationVariables,
+        TContext
+      > => {
+      return useMutation(getConfirmOriginalTrackPreviewMutationOptions(options));
+    }
 
 export const getHealthCheckUrl = () => {
 

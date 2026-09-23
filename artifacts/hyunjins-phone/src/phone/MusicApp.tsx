@@ -1,5 +1,6 @@
 import { ArrowLeft, Music2, Pause, Play, Volume2 } from 'lucide-react';
-import type { PhoneStore } from './config';
+import type { PhoneStore, OriginalTrack } from './config';
+import { OriginalTracksApp } from './OriginalTracksApp';
 
 type MusicDetail = { kind: string; id: string } | null;
 
@@ -7,6 +8,9 @@ type Props = {
   store: PhoneStore;
   detail: MusicDetail;
   setDetail: (d: MusicDetail) => void;
+  editMode?: boolean;
+  commit?: (update: (s: PhoneStore) => PhoneStore) => void;
+  onShare?: (track: OriginalTrack, destination: "messages" | "instagram" | "diary" | "files") => void;
 };
 
 const songsFor = (playlist: PhoneStore['musicPlaylists'][number]) =>
@@ -14,7 +18,13 @@ const songsFor = (playlist: PhoneStore['musicPlaylists'][number]) =>
     ? playlist.songs
     : String(playlist.songs || '').split('\n').map(song => song.trim()).filter(Boolean);
 
-export function MusicApp({ store, detail, setDetail }: Props) {
+export function MusicApp(props: Props) {
+  const { store, detail, setDetail } = props;
+
+  if (detail?.kind === 'original-tracks' || detail?.kind === 'original-track' || detail?.kind === 'new-original-track') {
+    return <OriginalTracksApp {...props} />;
+  }
+
   const playlists = store.musicPlaylists || [];
   const selected = detail?.kind === 'playlist' ? playlists.find(playlist => playlist.id === detail.id) : undefined;
 
@@ -66,6 +76,11 @@ export function MusicApp({ store, detail, setDetail }: Props) {
       </div>
       <p className="mb-3 mt-7 text-[10px] uppercase tracking-[.2em] text-white/40">playlists</p>
       <div className="grid grid-cols-2 gap-3">
+        <button onClick={() => setDetail({ kind: 'original-tracks', id: 'all' })} className="rounded-2xl border border-white/10 bg-white/[.045] p-4 text-left" data-testid="card-original-tracks">
+          <span className="flex h-14 w-full items-center justify-center rounded-xl bg-gradient-to-br from-[#39405b] to-[#718096]"><Music2 size={22} className="text-white/70" /></span>
+          <p className="mt-3 text-sm">Original Tracks</p>
+          <p className="mt-1 text-[10px] text-white/40">{((store as any).originalTracks || []).length} tracks</p>
+        </button>
         {playlists.map((playlist, index) => {
           const songs = songsFor(playlist);
           return <button key={playlist.id} onClick={() => setDetail({ kind: 'playlist', id: playlist.id })} className="rounded-2xl border border-white/10 bg-white/[.045] p-4 text-left" data-testid={`card-playlist-${index}`}>

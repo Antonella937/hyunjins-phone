@@ -9,6 +9,128 @@ import * as zod from 'zod';
 
 
 /**
+ * @summary Check whether a real music provider is connected
+ */
+export const GetMusicProviderResponse = zod.object({
+  "connected": zod.boolean(),
+  "label": zod.string()
+})
+
+
+/**
+ * @summary Compose and persist a real music preview
+ */
+export const generateOriginalTrackBodyPromptMin = 5;
+export const generateOriginalTrackBodyPromptMax = 1500;
+
+export const generateOriginalTrackBodyDurationSecondsMin = 3;
+export const generateOriginalTrackBodyDurationSecondsMax = 600;
+
+export const generateOriginalTrackBodyGenreMax = 120;
+
+export const generateOriginalTrackBodyMoodMax = 120;
+
+export const generateOriginalTrackBodyLyricsMax = 5000;
+
+export const generateOriginalTrackBodyNotesMax = 1000;
+
+
+
+export const GenerateOriginalTrackBody = zod.object({
+  "prompt": zod.string().min(generateOriginalTrackBodyPromptMin).max(generateOriginalTrackBodyPromptMax),
+  "mode": zod.enum(['instrumental', 'vocals', 'demo', 'loop']),
+  "durationSeconds": zod.number().int().min(generateOriginalTrackBodyDurationSecondsMin).max(generateOriginalTrackBodyDurationSecondsMax),
+  "genre": zod.string().max(generateOriginalTrackBodyGenreMax).optional(),
+  "mood": zod.string().max(generateOriginalTrackBodyMoodMax).optional(),
+  "lyrics": zod.string().max(generateOriginalTrackBodyLyricsMax).optional(),
+  "notes": zod.string().max(generateOriginalTrackBodyNotesMax).optional()
+})
+
+export const GenerateOriginalTrackResponse = zod.object({
+  "audioId": zod.string().uuid(),
+  "durationSeconds": zod.number(),
+  "contentType": zod.string(),
+  "previewToken": zod.string().describe('Opaque one-time token for confirming or discarding this preview')
+})
+
+
+/**
+ * @summary Draft optional lyrics for review
+ */
+export const generateOriginalLyricsBodyPromptMin = 5;
+export const generateOriginalLyricsBodyPromptMax = 1500;
+
+export const generateOriginalLyricsBodyGenreMax = 120;
+
+export const generateOriginalLyricsBodyMoodMax = 120;
+
+export const generateOriginalLyricsBodyContextMax = 1000;
+
+
+
+export const GenerateOriginalLyricsBody = zod.object({
+  "prompt": zod.string().min(generateOriginalLyricsBodyPromptMin).max(generateOriginalLyricsBodyPromptMax),
+  "genre": zod.string().max(generateOriginalLyricsBodyGenreMax).optional(),
+  "mood": zod.string().max(generateOriginalLyricsBodyMoodMax).optional(),
+  "context": zod.string().max(generateOriginalLyricsBodyContextMax).optional()
+})
+
+export const GenerateOriginalLyricsResponse = zod.object({
+  "lyrics": zod.string()
+})
+
+
+/**
+ * @summary Stream saved original audio with byte-range support
+ */
+export const GetOriginalTrackAudioParams = zod.object({
+  "audioId": zod.coerce.string().uuid()
+})
+
+export const GetOriginalTrackAudioResponse = zod.unknown()
+
+
+/**
+ * @summary Discard an unconfirmed generated audio preview
+ */
+export const DiscardOriginalTrackPreviewParams = zod.object({
+  "audioId": zod.coerce.string().uuid()
+})
+
+export const discardOriginalTrackPreviewBodyPreviewTokenMin = 32;
+export const discardOriginalTrackPreviewBodyPreviewTokenMax = 128;
+
+
+
+export const DiscardOriginalTrackPreviewBody = zod.object({
+  "previewToken": zod.string().min(discardOriginalTrackPreviewBodyPreviewTokenMin).max(discardOriginalTrackPreviewBodyPreviewTokenMax)
+})
+
+export const DiscardOriginalTrackPreviewResponse = zod.void()
+
+
+/**
+ * @summary Mark a generated audio preview as saved after user confirmation
+ */
+export const ConfirmOriginalTrackPreviewParams = zod.object({
+  "audioId": zod.coerce.string().uuid()
+})
+
+export const confirmOriginalTrackPreviewBodyPreviewTokenMin = 32;
+export const confirmOriginalTrackPreviewBodyPreviewTokenMax = 128;
+
+
+
+export const ConfirmOriginalTrackPreviewBody = zod.object({
+  "previewToken": zod.string().min(confirmOriginalTrackPreviewBodyPreviewTokenMin).max(confirmOriginalTrackPreviewBodyPreviewTokenMax)
+})
+
+export const ConfirmOriginalTrackPreviewResponse = zod.object({
+  "confirmed": zod.boolean()
+})
+
+
+/**
  * Returns server health status
  * @summary Health check
  */

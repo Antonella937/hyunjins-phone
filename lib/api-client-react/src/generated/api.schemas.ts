@@ -6,6 +6,82 @@
  * OpenAPI spec version: 0.1.0
  */
 /**
+ * Original Tracks MP3 audio bytes
+ */
+export type MusicAudioFile = string;
+
+export interface MusicProviderStatus {
+  connected: boolean;
+  label: string;
+}
+
+export type MusicGenerationInputMode = typeof MusicGenerationInputMode[keyof typeof MusicGenerationInputMode];
+
+
+export const MusicGenerationInputMode = {
+  instrumental: 'instrumental',
+  vocals: 'vocals',
+  demo: 'demo',
+  loop: 'loop',
+} as const;
+
+export interface MusicGenerationInput {
+  /**
+     * @minLength 5
+     * @maxLength 1500
+     */
+  prompt: string;
+  mode: MusicGenerationInputMode;
+  /**
+     * @minimum 3
+     * @maximum 600
+     */
+  durationSeconds: number;
+  /** @maxLength 120 */
+  genre?: string;
+  /** @maxLength 120 */
+  mood?: string;
+  /** @maxLength 5000 */
+  lyrics?: string;
+  /** @maxLength 1000 */
+  notes?: string;
+}
+
+export interface MusicGenerationResult {
+  audioId: string;
+  durationSeconds: number;
+  contentType: string;
+  /** Opaque one-time token for confirming or discarding this preview */
+  previewToken: string;
+}
+
+export interface MusicPreviewAction {
+  /**
+     * @minLength 32
+     * @maxLength 128
+     */
+  previewToken: string;
+}
+
+export interface MusicLyricsInput {
+  /**
+     * @minLength 5
+     * @maxLength 1500
+     */
+  prompt: string;
+  /** @maxLength 120 */
+  genre?: string;
+  /** @maxLength 120 */
+  mood?: string;
+  /** @maxLength 1000 */
+  context?: string;
+}
+
+export interface MusicLyricsResult {
+  lyrics: string;
+}
+
+/**
  * Raw audio bytes, up to 15 MB
  */
 export type VoiceAudioFile = string;
@@ -185,4 +261,8 @@ export type StoryImageFile = string;
 export interface StoryImageUploadResult {
   imageId: string;
 }
+
+export type ConfirmOriginalTrackPreview200 = {
+  confirmed: boolean;
+};
 

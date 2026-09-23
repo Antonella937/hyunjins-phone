@@ -12,7 +12,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Router as WouterRouter, Route, Switch, useLocation } from 'wouter';
-import { characterProfile, seedPhone, type PhoneStore, type Post, type GalleryItem, type DiaryEntry } from '@/phone/config';
+import { characterProfile, seedPhone, type PhoneStore, type Post, type GalleryItem, type DiaryEntry, type OriginalTrack } from '@/phone/config';
 import { PhoneApp, BrowserApp, EchoApp, StudioApp, PlacesApp, ScreenTimeApp } from '@/phone/NewApps';
 import { StoryAdmin } from '@/phone/StoryAdmin';
 import { InstagramApp } from '@/phone/InstagramApp';
@@ -20,6 +20,7 @@ import { VoiceMemos } from '@/phone/VoiceMemos';
 import { ContactsApp } from '@/phone/ContactsApp';
 import { EditManager } from '@/phone/EditManager';
 import { MusicApp } from '@/phone/MusicApp';
+import { SharedMusicReferences } from '@/phone/SharedMusicReferences';
 import { publishActivity, type ReviewProposal } from '@/phone/publishActivity';
 import { createContact } from '@/phone/createContact';
 
@@ -138,6 +139,7 @@ function Shell({ children, id, onBack, onSettings, editMode, onEdit }: { childre
 
 function ApprovedExtras({ store, app, detail, setDetail }: { store: PhoneStore; app: AppId; detail: Detail; setDetail: (d: Detail) => void }) {
   if (app === 'instagram') return null;
+  if (app === 'messages' || app === 'diary' || app === 'files') return <SharedMusicReferences store={store} app={app} detailId={detail?.id} />;
   if (app === 'gallery' && detail?.kind === 'album') {
     const photos = store.gallery.filter(g => detail.id === 'Favorites' ? g.favorite : g.album === detail.id);
     return <div className="mb-6"><button onClick={() => setDetail(null)} className="text-xs text-[#e7aabb]">← gallery</button><h3 className="mt-3 font-serif text-2xl">{detail.id}</h3><div className="mt-3 grid grid-cols-3 gap-2">{photos.map(g => <button key={g.id} onClick={() => setDetail({ kind: 'gallery', id: g.id })}><GalleryVisual item={g} /></button>)}</div></div>;
@@ -210,8 +212,31 @@ function Contacts({ store, setDetail, detail }: { store: PhoneStore; setDetail: 
 }
 
 function Music({ setDetail, detail }: { setDetail: (d: Detail) => void; detail: Detail }) {
-  const { store } = useContext(EditModeContext);
-  return <MusicApp store={store} setDetail={setDetail} detail={detail} />;
+  const { store, editMode, commit } = useContext(EditModeContext);
+  const onShare = (track: OriginalTrack, destination: 'messages' | 'instagram' | 'diary' | 'files') => {
+    if (!track.audioId) throw new Error('Generate and save the track before sharing it.');
+    const now = new Date().toISOString();
+    if (destination === 'messages') {
+      const answer = window.prompt('Share with which existing Contact?', store.contacts[0]?.name || '');
+      if (!answer) return;
+      const contact = store.contacts.find(c => c.name.toLowerCase() === answer.trim().toLowerCase());
+      if (!contact) throw new Error('Choose a name already in Contacts.');
+      commit(s => {
+        const thread = s.messages.find(m => m.person.toLowerCase() === contact.name.toLowerCase());
+        const message = { from: 'me' as const, text: `Original Track · ${track.title}`, time: now, kind: 'music' as const, audioTrackId: track.id };
+        if (thread) return { ...s, messages: s.messages.map(m => m.id === thread.id ? { ...m, messages: [...m.messages, message], preview: message.text, time: now } : m) };
+        return { ...s, messages: [{ id: `music-share-${crypto.randomUUID()}`, person: contact.name, initials: contact.initials, color: contact.color, preview: message.text, time: now, messages: [message] }, ...s.messages] };
+      });
+    } else if (destination === 'diary') {
+      commit(s => ({ ...s, diary: [{ id: `track-diary-${crypto.randomUUID()}`, title: track.title, body: `A reference to ${track.title} from Original Tracks.`, date: now.slice(0, 10), mood: track.mood || 'reflective', audioTrackId: track.id }, ...s.diary] }));
+    } else if (destination === 'files') {
+      commit(s => ({ ...s, files: [{ id: `track-file-${crypto.randomUUID()}`, name: track.title, folder: 'Music Ideas', type: 'audio/mpeg', date: now.slice(0, 10), audioTrackId: track.id }, ...s.files] }));
+    } else {
+      if (!track.coverImageId) throw new Error('Add cover artwork before sharing a music snippet to Stories.');
+      commit(s => ({ ...s, instagramStories: [{ id: `track-story-${crypto.randomUUID()}`, user: s.instagramProfile.username, caption: `A clip from ${track.title}`, time: 'just now', date: now.slice(0, 10), createdAt: now, imageId: track.coverImageId, audioTrackId: track.id, source: 'manual', audience: 'public', viewed: false }, ...s.instagramStories] }));
+    }
+  };
+  return <MusicApp store={store} setDetail={setDetail} detail={detail} editMode={editMode} commit={commit} onShare={onShare} />;
 }
 
 function Notifications({ store }: { store: PhoneStore }) { const icons: Record<string, any> = { message: MessageCircle, instagram: InstagramIcon, calendar: CalendarDays, notebook: NotebookPen, music: Music2 }; return <div><div className="mb-7"><p className="text-xs text-white/45">while you were away</p><h1 className="mt-1 font-serif text-4xl">Activity</h1></div><div className="space-y-2">{store.notifications.map((n, i) => { const I = icons[n.icon] || Bell; return <button key={n.id} className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[.045] p-4 text-left hover:bg-white/[.08]" data-testid={`card-notification-${i}`}><span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: `${n.color}35`, color: n.color }}><I size={17} /></span><span className="flex-1"><b className="block text-xs font-medium">{n.title}</b><small className="mt-1 block text-[10px] text-white/40">{n.sub}</small></span><ChevronRight size={15} className="text-white/20" /></button>; })}</div>{store.notifications.length === 0 && <Empty icon={Bell} title="That’s everything" body="New little things will appear here as the day moves on." />}</div>; }

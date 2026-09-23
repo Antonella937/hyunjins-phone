@@ -8,6 +8,7 @@ export function StoryViewer({ story, store, sequence, onClose, onNext, onPrev, o
   const [replacingImage, setReplacingImage] = useState<'gallery' | 'ai' | null>(null);
   const [error, setError] = useState('');
   const [progress, setProgress] = useState(0);
+  const [snippetPlaying, setSnippetPlaying] = useState(false);
   const touchStartY = useRef<number | null>(null);
   const touchStartX = useRef<number | null>(null);
   const nextRef = useRef(onNext);
@@ -16,6 +17,7 @@ export function StoryViewer({ story, store, sequence, onClose, onNext, onPrev, o
   const imageUrl = storyImageUrl(story);
   const hasImage = !!imageUrl;
   const account = storyAccount(story, store);
+  const snippet = story.audioTrackId ? (store.originalTracks || []).find(track => track.id === story.audioTrackId) : undefined;
   const currentSegment = sequence.findIndex(item => item.id === story.id);
 
   useEffect(() => {
@@ -24,20 +26,21 @@ export function StoryViewer({ story, store, sequence, onClose, onNext, onPrev, o
   }, [story.id, story.viewed, commit]);
 
   useEffect(() => {
-    if (editMode || replacingImage || !hasImage) return;
+    if (editMode || replacingImage || snippetPlaying || !hasImage) return;
     const duration = 5000;
     const step = 50;
     const increment = (step / duration) * 100;
     const timer = setInterval(() => setProgress(p => Math.min(100, p + increment)), step);
     return () => clearInterval(timer);
-  }, [story.id, replacingImage, hasImage, editMode]);
+  }, [story.id, replacingImage, hasImage, editMode, snippetPlaying]);
   useEffect(() => {
-    if (progress >= 100 && hasImage && !editMode && !replacingImage) nextRef.current();
-  }, [progress, hasImage, editMode, replacingImage]);
+    if (progress >= 100 && hasImage && !editMode && !replacingImage && !snippetPlaying) nextRef.current();
+  }, [progress, hasImage, editMode, replacingImage, snippetPlaying]);
 
   // Reset progress when story changes
   useEffect(() => {
     setProgress(0);
+    setSnippetPlaying(false);
   }, [story.id]);
 
   const handleImageSelect = (res: { imageId?: string; dataUrl?: string; source?: 'gallery' | 'upload' | 'ai-generated' }) => {
@@ -118,7 +121,14 @@ export function StoryViewer({ story, store, sequence, onClose, onNext, onPrev, o
          <button aria-label="Next Story" className="absolute inset-y-0 right-0 w-1/3 z-10" onClick={onNext} />
       </div>
 
-      {story.caption && (
+       {snippet?.audioId && <div className="absolute bottom-24 left-4 right-4 z-20 rounded-xl bg-black/65 p-3 text-white backdrop-blur-md">
+         <p className="mb-2 text-[10px]">Original Tracks · {snippet.title} · 15-second snippet</p>
+         <audio controls preload="metadata" className="w-full" src={`/api/music/audio/${snippet.audioId}`}
+           onPlay={event => { document.querySelectorAll('audio').forEach(other => { if (other !== event.currentTarget) other.pause(); }); setSnippetPlaying(true); }}
+           onPause={() => setSnippetPlaying(false)}
+           onTimeUpdate={event => { if (event.currentTarget.currentTime >= 15) event.currentTarget.pause(); }} />
+       </div>}
+       {story.caption && (
         <div className="absolute bottom-8 left-0 w-full p-4 text-center z-10 pointer-events-none">
           <p className="inline-block rounded-xl bg-black/50 px-4 py-2 text-sm text-white backdrop-blur-md pointer-events-auto">{story.caption}</p>
         </div>
