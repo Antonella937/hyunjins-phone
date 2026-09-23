@@ -59,7 +59,8 @@ export type InstagramStory = {
 export type InstagramProfile = { displayName: string; username: string; bio: string; location: string; photoDataUrl?: string; imageId?: string };
 export type InstagramHighlight = { id: string; name: string; storyIds: string[] };
 export type MusicActivity = { id: string; title: string; content: string; time: string; source?: 'ai-generated' };
-export type MusicPlaylist = { id: string; name: string; songs: string[]; description?: string; artwork?: string };
+export type SpotifyTrackRef = { id: string; uri: string; name: string; artists: string[]; album: string; artwork: string | null; durationMs: number; externalUrl: string };
+export type MusicPlaylist = { id: string; name: string; songs: string[]; description?: string; artwork?: string; spotifyTracks?: SpotifyTrackRef[] };
 export type OriginalTrack = {
   id: string; title: string; coverImageId?: string; audioId?: string; durationSeconds?: number;
   date: string; type: 'Full Song' | 'Demo' | 'Instrumental' | 'Loop / Idea';

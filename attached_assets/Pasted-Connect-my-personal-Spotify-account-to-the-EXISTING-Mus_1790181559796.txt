@@ -1,0 +1,300 @@
+Connect my personal Spotify account to the EXISTING Music app in this Living Phone and make the current Music interface control REAL Spotify playback.
+
+IMPORTANT:
+
+Keep the current Music UI and aesthetic.
+
+I already like the existing:
+
+* Now Playing card
+* progress bar
+* Play/Pause button
+* playlist cards
+* Music home-screen widget
+* typography
+* colors
+* layout
+
+Do NOT redesign the Music app.
+
+Do NOT modify Original Tracks.
+Original Tracks must remain a completely separate system for AI-generated original music.
+
+GOAL
+
+Add:
+
+Settings → Music → Spotify
+
+with:
+
+Connect Spotify
+Connected as: [Spotify account]
+Disconnect Spotify
+
+Use Spotify’s official APIs and Web Playback SDK.
+
+AUTHENTICATION
+
+Implement Spotify OAuth using Authorization Code with PKCE where appropriate for this web/PWA architecture.
+
+Never ask me to enter my Spotify password inside this application.
+
+Authentication must happen through Spotify’s official authorization page.
+
+After authorization, redirect me safely back to the Living Phone.
+
+Do NOT expose a Spotify Client Secret in frontend/browser code.
+
+SPOTIFY CONFIGURATION
+
+Create a Spotify integration configuration area that clearly tells me what developer configuration is still required.
+
+If a Spotify Client ID has not been configured, show:
+
+“Spotify setup required”
+
+and provide the exact Redirect URI that I need to add to my Spotify Developer Dashboard.
+
+Make the Redirect URI visible and copyable so I do not have to guess it.
+
+The redirect URI used during OAuth MUST exactly match the URI configured in Spotify Developer Dashboard.
+
+Use HTTPS for the deployed Replit application callback.
+
+SPOTIFY WEB PLAYBACK SDK
+
+Integrate Spotify Web Playback SDK into the existing Music player.
+
+When connected, create a Spotify Connect device for this Living Phone.
+
+Suggested device name:
+
+Hyunjin’s Phone
+
+Use actual Spotify playback state.
+
+Do NOT simulate playback.
+
+IOS / MOBILE
+
+The Living Phone is primarily used as an installed PWA / website on an iPhone.
+
+Respect iOS browser playback restrictions.
+
+Initialize/activate playback after an explicit user interaction such as pressing Play or Connect Player.
+
+Do not rely on autoplay.
+
+PLAYER
+
+Connect the EXISTING player controls to Spotify:
+
+Play
+Pause
+Previous
+Next
+Seek
+Current playback time
+Duration
+Progress
+Artwork
+Song title
+Artist
+Album
+
+The progress bar must follow Spotify’s REAL playback state.
+
+If Spotify is paused, the Living Phone must show paused.
+
+If Spotify is playing, the Living Phone must show playing.
+
+Do not use a fake timer.
+
+NOW PLAYING
+
+Use Spotify playback metadata to populate the existing Now Playing card.
+
+For example, if Spotify is actually playing:
+
+Pink + White
+Frank Ocean
+Blonde
+
+show that information in the existing Living Phone design.
+
+If another song begins playing, update the UI automatically.
+
+HOME SCREEN MUSIC WIDGET
+
+Connect the existing home-screen Music widget to Spotify’s actual current playback.
+
+Show:
+
+track
+artist
+artwork when appropriate
+playing/paused state
+
+Do not show fake Now Playing information when Spotify is not playing.
+
+PLAYLISTS
+
+Allow the Music app to access authorized Spotify playlist information when permitted.
+
+Keep the Living Phone’s fictional/custom playlists separate where appropriate.
+
+For Living Phone playlists such as:
+
+night walks
+for Antonella
+studio light
+
+allow their track entries to reference REAL Spotify tracks.
+
+Do not copy or download Spotify audio.
+
+Allow me to rename “for Antonella” to “for Nela” through Edit Mode.
+
+SEARCH
+
+Add Spotify search inside Music.
+
+Allow searching by:
+
+Track
+Artist
+Album
+
+Results should display using the existing Living Phone aesthetic.
+
+Allow:
+
+Play
+Add to Living Phone Playlist
+Open in Spotify
+
+PLAYING A TRACK
+
+When I select a Spotify track from the Living Phone:
+
+1. Ensure the Web Playback SDK player is connected.
+2. Activate the player after user interaction when required.
+3. Transfer playback to the Living Phone Spotify device when necessary.
+4. Start the selected Spotify track.
+5. Update the existing Now Playing interface.
+
+If playback cannot start, show the actual error instead of pretending it is playing.
+
+SPOTIFY CONNECT
+
+Add a small device selector accessible from the Music player.
+
+Allow me to see/select available Spotify devices when supported.
+
+The Living Phone browser player should appear as:
+
+Hyunjin’s Phone
+
+Do not automatically steal playback from another device without an explicit user action.
+
+AUTHORIZATION / SCOPES
+
+Request only the Spotify permissions actually required for:
+
+* streaming/playback
+* reading playback state
+* controlling playback
+* reading basic account information
+* reading playlists/library where used
+
+Do not request unrelated permissions.
+
+TOKEN HANDLING
+
+Implement token refresh properly.
+
+Do not require me to reconnect Spotify every hour simply because an access token expires.
+
+Store authentication data appropriately and securely for this architecture.
+
+Never expose sensitive credentials unnecessarily.
+
+SETTINGS STATUS
+
+Settings → Music → Spotify should clearly show:
+
+Not Configured
+Ready to Connect
+Connected
+Authentication Expired
+Playback Device Unavailable
+
+depending on actual state.
+
+SETUP ASSISTANT
+
+After implementation, provide a simple setup panel inside Settings → Music → Spotify showing:
+
+1. Spotify Developer App required
+2. Client ID
+3. Redirect URI
+4. Connection status
+5. Connect Spotify
+
+The app should generate/display the EXACT production Redirect URI I must register with Spotify.
+
+Do not make me manually construct the callback URL.
+
+PREMIUM
+
+If Spotify Web Playback requires Premium and the connected account does not support playback, clearly explain that in the UI.
+
+Do not simulate playback.
+
+ORIGINAL TRACKS
+
+Do NOT send AI-generated Original Tracks to Spotify.
+
+Do NOT mix Spotify authentication/storage with Original Tracks.
+
+Original Tracks continue using their own real stored audio files and player.
+
+Spotify Music and Original Tracks should simply coexist inside Music.
+
+ERROR HANDLING
+
+Handle:
+
+Spotify not connected
+OAuth denied
+expired authentication
+player initialization failure
+Premium/account restriction
+no active playback device
+track unavailable
+network error
+mobile playback activation required
+
+Show useful errors rather than silently failing.
+
+TEST BEFORE REPORTING SUCCESS
+
+After implementation, do not claim Spotify playback works until these technical components are implemented and ready for user authorization:
+
+1. Settings → Music → Spotify exists.
+2. The exact Redirect URI is displayed.
+3. Connect Spotify launches official Spotify OAuth.
+4. OAuth callback returns to the Living Phone.
+5. Spotify account shows Connected.
+6. Web Playback SDK creates a device named “Hyunjin’s Phone.”
+7. User pressing Play activates playback.
+8. Actual Spotify audio is audible.
+9. Pause actually pauses Spotify.
+10. Next/Previous work.
+11. Progress follows real playback.
+12. Now Playing shows actual Spotify metadata.
+13. The home-screen Music widget reflects actual playback.
+14. Refresh/reopening does not unnecessarily require a complete reauthorization.
+
+Never represent Spotify as connected until authorization actually succeeds.

@@ -3,3 +3,4 @@
 - [Instagram Story contacts](instagram-story-contacts.md) — use existing Contacts as Story identities; retain retired Stories as history, not active circles.
 - [Music runtime provider](music-runtime-provider.md) — agent-side music tools cannot power in-app generation; keep disconnected status honest until a server provider is configured.
 - [Echo legacy identity](echo-legacy-identity.md) — map old Echo Antonella references to existing c1 as Nela without renaming Contacts or rewriting stored posts.
+- [Spotify authorization boundaries](spotify-authorization-boundaries.md) — keep refresh credentials server-protected; development and production callbacks must be registered separately.

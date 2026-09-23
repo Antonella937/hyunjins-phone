@@ -6,7 +6,7 @@ import {
   Instagram as InstagramIcon, LockKeyhole, MapPin, Menu, MessageCircle, Mic2, Music2, NotebookPen,
   Pause, Pencil, Phone as PhoneIcon, Play, Plus, Search, Send, Settings, ShieldCheck, Signal,
   Smartphone, Sparkles, Star, Trash2, UserRound, Volume2, X, Zap,
-  Compass, MessageSquareQuote, AudioLines
+  Compass, MessageSquareQuote, AudioLines, Copy, Check
 } from 'lucide-react';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
@@ -23,6 +23,7 @@ import { MusicApp } from '@/phone/MusicApp';
 import { SharedMusicReferences } from '@/phone/SharedMusicReferences';
 import { publishActivity, type ReviewProposal } from '@/phone/publishActivity';
 import { createContact } from '@/phone/createContact';
+import { SpotifyProvider, useSpotify } from '@/phone/SpotifyProvider';
 
 const queryClient = new QueryClient();
 type AppId = 'phone' | 'messages' | 'instagram' | 'echo' | 'gallery' | 'music' | 'studio' | 'diary' | 'notes' | 'quick' | 'voice' | 'calendar' | 'places' | 'browser' | 'contacts' | 'notifications' | 'files' | 'screentime' | 'secret';
@@ -110,6 +111,31 @@ function Home({ onOpen, onSettings, editMode }: { onOpen: (id: AppId) => void; o
   const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
   const date = now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
   const apps = Object.keys(appMeta) as AppId[];
+  const { status, playback } = useSpotify();
+
+  const isSpotifyConnected = status?.status === 'connected';
+  const isActuallyPlaying = isSpotifyConnected && playback?.isPlaying;
+  const showBars = isActuallyPlaying;
+
+  let musicTitle = 'Checking Spotify…';
+  let musicSubtitle = 'Music';
+
+  if (status?.status === 'not_configured' || status?.status === 'ready_to_connect') {
+    musicTitle = 'Not connected';
+    musicSubtitle = 'Spotify · set up in Settings';
+  } else if (status?.status === 'authentication_expired') {
+    musicTitle = 'Spotify connection expired';
+    musicSubtitle = 'Reconnect in Settings';
+  } else if (isSpotifyConnected) {
+    if (playback?.track) {
+      musicTitle = playback.track.name;
+      musicSubtitle = playback.track.artists.join(', ') + (playback.isPlaying ? ' · playing' : ' · paused');
+    } else {
+      musicTitle = 'Nothing playing';
+      musicSubtitle = 'Open Music to start playback';
+    }
+  }
+
   return <div className="relative flex min-h-[100dvh] flex-col overflow-hidden bg-[#11101c] px-5 pb-7 text-[#f3eee7] sm:mx-auto sm:min-h-0 sm:h-[844px] sm:max-w-[402px] sm:rounded-[44px] sm:border sm:border-white/15 sm:shadow-[0_30px_100px_rgba(0,0,0,.5)] phone-rise">
     <div className="absolute inset-0 overflow-hidden bg-[radial-gradient(circle_at_22%_18%,rgba(194,113,136,.46),transparent_32%),radial-gradient(circle_at_80%_42%,rgba(82,106,142,.55),transparent_36%),linear-gradient(158deg,#29243a_0%,#171525_52%,#0e101b_100%)]">
       <div className="absolute -right-24 top-40 h-80 w-80 rounded-full border border-[#f0c8ac]/20 blur-[1px]" /><div className="absolute -left-24 bottom-8 h-72 w-72 rounded-full bg-[#9d6e8c]/15 blur-3xl" /><div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0b0d16]/80 to-transparent" />
@@ -118,7 +144,13 @@ function Home({ onOpen, onSettings, editMode }: { onOpen: (id: AppId) => void; o
     {editMode && <span className="relative z-10 mt-2 self-end rounded-full border border-[#d98ca7]/30 px-2 py-1 text-[10px] text-[#e7aabb]">Edit Mode ON</span>}
     <div className="relative z-10 mt-12"><p className="text-[10px] uppercase tracking-[.28em] text-[#e7c8cc]/75">Hyunjin’s phone · {characterProfile.city}</p><h1 className="mt-3 font-serif text-[4.9rem] leading-[.84] tracking-[-.07em] text-[#fbf1e6]" data-testid="text-home-clock">{time}</h1><p className="mt-4 text-sm text-[#efe1db]/75" data-testid="text-home-date">{date}</p></div>
     <div className="relative z-10 mt-8 grid grid-cols-2 gap-3">
-      <button className="glass group rounded-3xl p-4 text-left transition-transform active:scale-[.97]" onClick={() => onOpen('music')} data-testid="button-now-playing"><div className="flex items-center justify-between"><Music2 size={15} className="text-[#f1c7a4]" /><span className="flex gap-0.5">{[1, 2, 3, 4].map(i => <i key={i} className="h-3 w-0.5 origin-bottom animate-[wave_1.2s_ease-in-out_infinite] rounded-full bg-[#e5a9b3]" style={{ animationDelay: `${i * .12}s` }} />)}</span></div><p className="mt-5 truncate text-sm font-medium">Pink + White</p><p className="mt-1 truncate text-[10px] text-white/55">Frank Ocean · memory 14</p></button>
+      <button className="glass group rounded-3xl p-4 text-left transition-transform active:scale-[.97]" onClick={() => onOpen('music')} data-testid="button-now-playing"><div className="flex items-center justify-between">
+        {isSpotifyConnected && playback?.track?.artwork ? (
+          <img src={playback.track.artwork} className="h-4 w-4 rounded-full object-cover" alt="Artwork" />
+        ) : (
+          <Music2 size={15} className="text-[#f1c7a4]" />
+        )}
+        <span className="flex gap-0.5">{showBars ? [1, 2, 3, 4].map(i => <i key={i} className="h-3 w-0.5 origin-bottom animate-[wave_1.2s_ease-in-out_infinite] rounded-full bg-[#e5a9b3]" style={{ animationDelay: `${i * .12}s` }} />) : null}</span></div><p className="mt-5 truncate text-sm font-medium">{musicTitle}</p><p className="mt-1 truncate text-[10px] text-white/55">{musicSubtitle}</p></button>
       <button className="glass rounded-3xl p-4 text-left transition-transform active:scale-[.97]" onClick={() => onOpen('diary')} data-testid="button-mood-widget"><div className="flex items-center justify-between"><CloudRain size={15} className="text-[#b7c9d6]" /><span className="text-[10px] text-white/50">22°</span></div><p className="mt-5 text-sm font-medium">soft rain in Seoul</p><p className="mt-1 text-[10px] text-white/55">near Hannam · mood: quiet</p></button>
     </div>
     <div className="relative z-10 mt-7 flex-1"><div className="mb-3 flex items-center justify-between"><span className="text-[10px] uppercase tracking-[.24em] text-white/45">all apps</span><button className="rounded-full p-1.5 text-white/55 transition-colors hover:bg-white/10 hover:text-white" onClick={onSettings} data-testid="button-open-settings"><Settings size={16} /></button></div><div className="grid grid-cols-4 gap-x-3 gap-y-5">
@@ -262,16 +294,223 @@ function EditPanel({ onClose, store, setStore }: { onClose: () => void; store: P
   return <div className="fixed inset-0 z-30 flex items-end bg-black/45 backdrop-blur-sm"><div className="mx-auto w-full max-w-[402px] rounded-t-[30px] border-t border-white/15 bg-[#1b1828] p-5 shadow-2xl app-in"><div className="mb-5 flex items-center justify-between"><div><p className="text-[10px] uppercase tracking-[.2em] text-[#dca4b1]">edit mode</p><h2 className="mt-1 font-serif text-2xl">Add something</h2></div><button onClick={onClose} className="rounded-full p-2 text-white/50 hover:bg-white/10" data-testid="button-close-edit-panel"><X size={18} /></button></div><div className="mb-4 flex gap-2 overflow-x-auto">{[['quick','quick note'],['diary','diary page'],['event','calendar event'],['contact','contact']].map(([v,l]) => <button key={v} onClick={() => setKind(v)} className={`shrink-0 rounded-full border px-3 py-2 text-[11px] ${kind === v ? 'border-[#d98ca7] bg-[#d98ca7]/15 text-[#efbac4]' : 'border-white/10 text-white/45'}`} data-testid={`button-edit-kind-${v}`}>{l}</button>)}</div><textarea value={text} onChange={e => setText(e.target.value)} placeholder={kind === 'contact' ? 'contact name' : kind === 'quick' ? 'a thought before it disappears…' : kind === 'diary' ? 'what happened today?' : 'what is happening?'} className="h-28 w-full resize-none rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-white outline-none placeholder:text-white/25 focus:border-[#d98ca7]" data-testid="textarea-edit-content" />{kind === 'contact' && <div className="mt-2 space-y-2"><input value={role} onChange={e => setRole(e.target.value)} placeholder="Role" className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-sm outline-none" /><input value={context} onChange={e => setContext(e.target.value)} placeholder="Context" className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-sm outline-none" /></div>}<button onClick={submit} className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#d98ca7] py-3 text-sm text-[#291d26]" data-testid="button-save-edit"><Plus size={16} /> save to phone</button><p className="mt-3 text-center text-[10px] text-white/30">local edits survive refresh</p></div></div>;
 }
 
-function SettingsPanel({ onClose, editMode, setEditMode, onOpenAdmin }: { onClose: () => void; editMode: boolean; setEditMode: (v: boolean) => void; onOpenAdmin: () => void }) { return <div className="fixed inset-0 z-30 flex items-end bg-black/45 backdrop-blur-sm"><div className="mx-auto w-full max-w-[402px] rounded-t-[30px] border-t border-white/15 bg-[#1b1828] p-5 app-in"><div className="mb-5 flex items-center justify-between"><div><p className="text-[10px] uppercase tracking-[.2em] text-[#dca4b1]">phone settings</p><h2 className="mt-1 font-serif text-2xl">A little control room</h2></div><button onClick={onClose} className="rounded-full p-2 text-white/50 hover:bg-white/10" data-testid="button-close-settings"><X size={18} /></button></div><div className="space-y-2"><button onClick={() => setEditMode(!editMode)} className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[.045] p-4 text-left" data-testid="button-settings-edit-mode"><Pencil size={17} className="text-[#e2a7b4]" /><span className="flex-1"><b className="block text-sm">Edit Mode</b><small className="text-[10px] text-white/40">add, remove, and shape the little details</small></span><span className={`h-5 w-9 rounded-full p-0.5 ${editMode ? 'bg-[#d98ca7]' : 'bg-white/15'}`}><span className={`block h-4 w-4 rounded-full bg-white transition-transform ${editMode ? 'translate-x-4' : ''}`} /></span></button><button onClick={onOpenAdmin} className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[.045] p-4 text-left"><Settings size={17} className="text-[#e2a7b4]" /><span className="flex-1"><b className="block text-sm">Story Admin</b><small className="text-[10px] text-white/40">generate activity and edit canon</small></span></button><div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[.045] p-4"><ShieldCheck size={17} className="text-[#b9d0b4]" /><span><b className="block text-sm">Private by design</b><small className="text-[10px] text-white/40">fictional roleplay material · stored locally</small></span></div></div></div></div>; }
+function SettingsPanel({ onClose, editMode, setEditMode, onOpenAdmin, initialView = 'main', spotifyNotice }: { onClose: () => void; editMode: boolean; setEditMode: (v: boolean) => void; onOpenAdmin: () => void; initialView?: 'main' | 'music' | 'spotify'; spotifyNotice?: string | null }) {
+  const [view, setView] = useState(initialView);
+  const [copyMessage, setCopyMessage] = useState('');
+  const { status, connect, disconnect, dismissError, error, playerState } = useSpotify();
+  
+  const copyRedirect = async () => {
+    try {
+      if (!status?.productionRedirectUri) throw new Error('Redirect URI is not available yet.');
+      await navigator.clipboard.writeText(status.productionRedirectUri);
+      setCopyMessage('Copied');
+    } catch {
+      setCopyMessage('Could not copy. Select the URI above to copy it.');
+    }
+  };
+  
+  if (view === 'spotify') {
+    return (
+      <div className="fixed inset-0 z-30 flex items-end bg-black/45 backdrop-blur-sm">
+        <div className="mx-auto max-h-[90dvh] w-full max-w-[402px] overflow-y-auto rounded-t-[30px] border-t border-white/15 bg-[#1b1828] p-5 app-in">
+          <div className="mb-5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button onClick={() => setView('music')} className="rounded-full p-2 -ml-2 text-white/50 hover:bg-white/10" data-testid="button-back-to-music-settings"><ArrowLeft size={18} /></button>
+              <div>
+                <p className="text-[10px] uppercase tracking-[.2em] text-[#dca4b1]">music settings</p>
+                <h2 className="mt-1 font-serif text-2xl">Spotify</h2>
+              </div>
+            </div>
+            <button onClick={onClose} className="rounded-full p-2 text-white/50 hover:bg-white/10" data-testid="button-close-settings"><X size={18} /></button>
+          </div>
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-white/10 bg-white/[.045] p-4">
+              <p className="text-sm font-medium">Connection Status</p>
+              <p className="mt-1 text-xs text-white/60">
+                {status?.status === 'not_configured' ? 'Not Configured' : 
+                 status?.status === 'ready_to_connect' ? 'Ready to Connect' : 
+                 status?.status === 'connected' ? (playerState === 'unavailable' ? 'Playback Device Unavailable' : 'Connected') : 
+                 status?.status === 'authentication_expired' ? 'Authentication Expired' : 'Unknown'}
+              </p>
+              {status?.status === 'connected' && status.account && (
+                <p className="mt-2 text-[10px] text-[#b9d0b4]">Connected as: {status.account.displayName} ({status.account.product})</p>
+              )}
+              {spotifyNotice && <p role="alert" className="mt-3 text-xs text-[#e7aabb]">{spotifyNotice}</p>}
+              {status?.status === 'connected' && status.account?.product !== 'premium' && (
+                <p className="mt-3 text-xs text-[#e7aabb]">Spotify Premium is required to play audio in this browser. Mobile-only Premium plans are not supported by Spotify’s Web Playback SDK.</p>
+              )}
+              {error && (
+                <div className="mt-3 rounded-xl border border-red-500/30 bg-red-500/10 p-3">
+                  <p className="text-xs text-red-200">{error}</p>
+                  <button onClick={dismissError} className="mt-2 text-[10px] text-red-300 hover:text-red-100">Dismiss</button>
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-2xl border border-[#dca4b1]/30 bg-[#dca4b1]/5 p-4">
+                <p className="text-sm font-medium text-[#dca4b1]">{status?.configured ? 'Spotify developer configuration' : 'Spotify setup required'}</p>
+                <p className="mt-2 text-xs text-white/60">1. A Spotify Developer App is required. Create one in Spotify’s Developer Dashboard.</p>
+                <p className="mt-2 text-xs text-white/60">
+                  2. Client ID: <strong>{status?.configured ? 'Configured' : 'Not configured'}</strong>. {status?.configured ? '' : 'Add your app’s Client ID as the SPOTIFY_CLIENT_ID environment variable in Replit.'} Do not enter your Spotify password or add a client secret here.
+                </p>
+                <div className="mt-4">
+                  <p className="text-xs font-medium">3. Redirect URI</p>
+                  <p className="mt-1 text-[10px] text-white/50">Add this exact production URL to your Spotify Developer App.</p>
+                  <div className="mt-2 flex items-center gap-2 rounded-xl bg-black/40 p-2.5">
+                    <span className="min-w-0 flex-1 select-all break-all font-mono text-[10px] text-white/70" title={status?.productionRedirectUri || ''}>
+                      {status?.productionRedirectUri || 'Loading...'}
+                    </span>
+                    <button onClick={copyRedirect} disabled={!status?.productionRedirectUri} aria-label="Copy production Spotify redirect URI" className="shrink-0 p-1 text-white/40 hover:text-white disabled:opacity-40" title="Copy"><Copy size={14} /></button>
+                  </div>
+                  {copyMessage && <p role="status" className="mt-1 text-[10px] text-white/60">{copyMessage}</p>}
+                  {status?.redirectUri !== status?.productionRedirectUri && (
+                    <div className="mt-3">
+                      <p className="text-[10px] text-white/50">Using the preview to connect? Register this development URI too:</p>
+                      <p className="mt-1 select-all break-all font-mono text-[9px] text-white/50">{status?.redirectUri}</p>
+                    </div>
+                  )}
+                </div>
+                <p className="mt-3 text-[10px] text-white/50">4. Connection status: {status?.status === 'connected' ? 'Connected' : status?.status === 'authentication_expired' ? 'Authentication expired' : status?.configured ? 'Ready to connect' : 'Not configured'}</p>
+                <p className="mt-2 text-[10px] text-white/50">5. Connect Spotify below. Spotify opens its own authorization page.</p>
+            </div>
+
+            <div className="pt-2">
+              {status?.status === 'connected' ? (
+                <button onClick={() => disconnect().catch(() => {})} className="w-full rounded-2xl bg-white/10 py-3 text-sm font-medium text-white hover:bg-white/15 transition-colors" data-testid="button-spotify-disconnect">
+                  Disconnect Spotify
+                </button>
+              ) : (
+                <button 
+                  onClick={connect} 
+                  disabled={!status?.configured}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#1DB954] py-3 text-sm font-medium text-black hover:bg-[#1ed760] transition-colors disabled:opacity-50 disabled:grayscale" 
+                  data-testid="button-spotify-connect"
+                >
+                  <Music2 size={16} /> Connect Spotify
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (view === 'music') {
+    return (
+      <div className="fixed inset-0 z-30 flex items-end bg-black/45 backdrop-blur-sm">
+        <div className="mx-auto w-full max-w-[402px] rounded-t-[30px] border-t border-white/15 bg-[#1b1828] p-5 app-in">
+          <div className="mb-5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button onClick={() => setView('main')} className="rounded-full p-2 -ml-2 text-white/50 hover:bg-white/10" data-testid="button-back-to-main-settings"><ArrowLeft size={18} /></button>
+              <div>
+                <p className="text-[10px] uppercase tracking-[.2em] text-[#dca4b1]">phone settings</p>
+                <h2 className="mt-1 font-serif text-2xl">Music</h2>
+              </div>
+            </div>
+            <button onClick={onClose} className="rounded-full p-2 text-white/50 hover:bg-white/10" data-testid="button-close-settings"><X size={18} /></button>
+          </div>
+          <div className="space-y-2">
+            <button onClick={() => setView('spotify')} className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[.045] p-4 text-left hover:bg-white/[.08] transition-colors" data-testid="button-settings-spotify">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1DB954]/20 text-[#1DB954]">
+                <Music2 size={16} />
+              </span>
+              <span className="flex-1">
+                <b className="block text-sm">Spotify</b>
+                <small className="text-[10px] text-white/40">Connect your account</small>
+              </span>
+              <ChevronRight size={16} className="text-white/30" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-30 flex items-end bg-black/45 backdrop-blur-sm">
+      <div className="mx-auto w-full max-w-[402px] rounded-t-[30px] border-t border-white/15 bg-[#1b1828] p-5 app-in">
+        <div className="mb-5 flex items-center justify-between">
+          <div>
+            <p className="text-[10px] uppercase tracking-[.2em] text-[#dca4b1]">phone settings</p>
+            <h2 className="mt-1 font-serif text-2xl">A little control room</h2>
+          </div>
+          <button onClick={onClose} className="rounded-full p-2 text-white/50 hover:bg-white/10" data-testid="button-close-settings"><X size={18} /></button>
+        </div>
+        <div className="space-y-2">
+          <button onClick={() => setView('music')} className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[.045] p-4 text-left hover:bg-white/[.08] transition-colors" data-testid="button-settings-music">
+            <Music2 size={17} className="text-[#a9c8d5]" />
+            <span className="flex-1">
+              <b className="block text-sm">Music Settings</b>
+              <small className="text-[10px] text-white/40">Spotify & playback preferences</small>
+            </span>
+            <ChevronRight size={16} className="text-white/30" />
+          </button>
+          <button onClick={() => setEditMode(!editMode)} className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[.045] p-4 text-left" data-testid="button-settings-edit-mode">
+            <Pencil size={17} className="text-[#e2a7b4]" />
+            <span className="flex-1">
+              <b className="block text-sm">Edit Mode</b>
+              <small className="text-[10px] text-white/40">add, remove, and shape the little details</small>
+            </span>
+            <span className={`h-5 w-9 rounded-full p-0.5 ${editMode ? 'bg-[#d98ca7]' : 'bg-white/15'}`}>
+              <span className={`block h-4 w-4 rounded-full bg-white transition-transform ${editMode ? 'translate-x-4' : ''}`} />
+            </span>
+          </button>
+          <button onClick={onOpenAdmin} className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[.045] p-4 text-left">
+            <Settings size={17} className="text-[#e2a7b4]" />
+            <span className="flex-1">
+              <b className="block text-sm">Story Admin</b>
+              <small className="text-[10px] text-white/40">generate activity and edit canon</small>
+            </span>
+          </button>
+          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[.045] p-4">
+            <ShieldCheck size={17} className="text-[#b9d0b4]" />
+            <span>
+              <b className="block text-sm">Private by design</b>
+              <small className="text-[10px] text-white/40">fictional roleplay material · stored locally</small>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function Phone() {
-  const [store, setStore, publish, commit] = usePhoneStore(); const [openApp, setOpenApp] = useState<AppId | null>(null); const [detail, setDetail] = useState<Detail>(null); const [settings, setSettings] = useState(false); const [editMode, setEditMode] = useState(false); const [editPanel, setEditPanel] = useState(false); const [unlocked, setUnlocked] = useState(false); const [admin, setAdmin] = useState(false);
+  const [store, setStore, publish, commit] = usePhoneStore(); 
+  const [openApp, setOpenApp] = useState<AppId | null>(null); 
+  const [detail, setDetail] = useState<Detail>(null); 
+  const [settings, setSettings] = useState(false); 
+  const [settingsView, setSettingsView] = useState<'main' | 'music' | 'spotify'>('main');
+  const [spotifyNotice, setSpotifyNotice] = useState<string | null>(null);
+  const [editMode, setEditMode] = useState(false); 
+  const [editPanel, setEditPanel] = useState(false); 
+  const [unlocked, setUnlocked] = useState(false); 
+  const [admin, setAdmin] = useState(false);
+
+  useEffect(() => {
+    const result = new URLSearchParams(window.location.search).get('spotify');
+    if (result && ['connected', 'denied', 'expired', 'error'].includes(result)) {
+      setSettings(true);
+      setSettingsView('spotify');
+      setSpotifyNotice({
+        connected: 'Spotify authorization finished. Checking your account…',
+        denied: 'Spotify authorization was denied. Your account was not connected.',
+        expired: 'Spotify authorization expired or did not match this browser. Please try connecting again.',
+        error: 'Spotify authorization could not finish. Check the exact Redirect URI and try again.',
+      }[result] || null);
+      const url = new URL(window.location.href);
+      url.searchParams.delete('spotify');
+      window.history.replaceState({}, '', url);
+    }
+  }, []);
+
   useEffect(() => { const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { if (admin) setAdmin(false); else if (detail) setDetail(null); else if (openApp) setOpenApp(null); else setSettings(false); } }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }, [detail, openApp, admin]);
   const goHome = () => { setOpenApp(null); setDetail(null); };
   const page = useMemo(() => { if (!openApp) return null; const common = { id: openApp, onBack: goHome, onSettings: () => setSettings(true), editMode, onEdit: () => setEditPanel(true) }; let body: ReactNode; switch (openApp) { case 'phone': body = <PhoneApp store={store} setStore={setStore} detail={detail} setDetail={setDetail} editMode={editMode} />; break; case 'messages': body = <Messages store={store} setStore={setStore} detail={detail} setDetail={setDetail} editMode={editMode} />; break; case 'instagram': body = <InstagramApp store={store} detail={detail} setDetail={setDetail} editMode={editMode} commit={commit} />; break; case 'echo': body = <EchoApp store={store} setStore={setStore} editMode={editMode} />; break; case 'gallery': body = <Gallery store={store} setStore={setStore} detail={detail} setDetail={setDetail} editMode={editMode} />; break; case 'music': body = <Music detail={detail} setDetail={setDetail} />; break; case 'studio': body = <StudioApp store={store} setStore={setStore} editMode={editMode} />; break; case 'diary': body = <Diary store={store} setStore={setStore} detail={detail} setDetail={setDetail} editMode={editMode} />; break; case 'notes': body = detail?.kind === 'note' ? <NoteDetail store={store} detail={detail} setDetail={setDetail} /> : <Notes store={store} setDetail={setDetail} />; break; case 'quick': body = <QuickNotes store={store} setStore={setStore} editMode={editMode} />; break; case 'voice': body = <Voice store={store} setDetail={setDetail} detail={detail} setStore={setStore} editMode={editMode} />; break; case 'calendar': body = <Calendar store={store} setStore={setStore} editMode={editMode} />; break; case 'places': body = <PlacesApp store={store} setStore={setStore} editMode={editMode} />; break; case 'browser': body = <BrowserApp store={store} setStore={setStore} editMode={editMode} />; break; case 'contacts': body = <Contacts store={store} detail={detail} setDetail={setDetail} />; break; case 'notifications': body = <Notifications store={store} />; break; case 'files': body = <Files store={store} />; break; case 'screentime': body = <ScreenTimeApp store={store} />; break; case 'secret': body = <Secret unlocked={unlocked} setUnlocked={setUnlocked} />; break; default: body = null; } return <Shell {...common}><ApprovedExtras store={store} app={openApp} detail={detail} setDetail={setDetail} />{body}</Shell>; }, [openApp, detail, store, editMode, unlocked]);
-  return <EditModeContext.Provider value={{ editMode, commit, openManager: () => setEditPanel(true), store }}><div className="noise min-h-[100dvh] py-0 sm:flex sm:items-center sm:justify-center sm:py-5">{page ?? <Home onOpen={(id) => { setDetail(null); setOpenApp(id); }} onSettings={() => setSettings(true)} editMode={editMode} />}{settings && <SettingsPanel onClose={() => setSettings(false)} editMode={editMode} setEditMode={value => { setEditMode(value); if (!value) setEditPanel(false); }} onOpenAdmin={() => { setSettings(false); setAdmin(true); }} />}{editPanel && openApp && editMode && <EditManager app={openApp} initialId={detail?.id} onDeleted={id => { if (detail?.id === id) setDetail(null); }} onClose={() => setEditPanel(false)} store={store} commit={commit} />}{admin && <StoryAdmin store={store} setStore={setStore} onPublish={publish} onClose={() => setAdmin(false)} />}</div></EditModeContext.Provider>;
+  return <EditModeContext.Provider value={{ editMode, commit, openManager: () => setEditPanel(true), store }}><div className="noise min-h-[100dvh] py-0 sm:flex sm:items-center sm:justify-center sm:py-5">{page ?? <Home onOpen={(id) => { setDetail(null); setOpenApp(id); }} onSettings={() => { setSettingsView('main'); setSettings(true); }} editMode={editMode} />}{settings && <SettingsPanel onClose={() => { setSettings(false); setSpotifyNotice(null); }} editMode={editMode} setEditMode={value => { setEditMode(value); if (!value) setEditPanel(false); }} onOpenAdmin={() => { setSettings(false); setAdmin(true); }} initialView={settingsView} spotifyNotice={spotifyNotice} />}{editPanel && openApp && editMode && <EditManager app={openApp} initialId={detail?.id} onDeleted={id => { if (detail?.id === id) setDetail(null); }} onClose={() => setEditPanel(false)} store={store} commit={commit} />}{admin && <StoryAdmin store={store} setStore={setStore} onPublish={publish} onClose={() => setAdmin(false)} />}</div></EditModeContext.Provider>;
 }
 
 function Router() { const [location] = useLocation(); return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={Phone} /><Route component={() => <Phone />} /></Switch></ErrorBoundary>; }
-function App() { return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><Router /></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider>; }
+function App() { return <SpotifyProvider><QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><Router /></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider></SpotifyProvider>; }
 export default App;
