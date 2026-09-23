@@ -64,7 +64,7 @@ Return:
   "proposals": [
     {
       "id": "unique-kebab-id",
-      "app": "messages|instagram|echo|gallery|diary|notes|quickNotes|voice|music|studio|calendar|browser|calls|notifications|files|places",
+       "app": "messages|instagram|echo|gallery|diary|notes|quickNotes|voice|music|studio|calendar|browser|calls|notifications|files|places|contacts",
       "type": "short subtype",
       "title": "short review title",
       "content": "the realistic fictional content",
@@ -75,6 +75,7 @@ Return:
   ]
 }
 
+For a contact card use app "contacts", title as the person's name, content as their context, and metadata with "role" and optionally "color". Never use "messages" for a new contact.
 Keep proposals concise and reviewable. For calls, record only that a call occurred unless conversation content was explicitly supplied.`;
 
   try {

@@ -72,7 +72,7 @@ export function StoryAdmin({ store, setStore, onPublish, onClose }: { store: Pho
       if (items.length === proposals.length) setTab('update');
     } catch (error) {
       console.error('Could not save generated activity', error);
-      setSaveError('Could not save generated activity');
+      setSaveError(`Could not save generated activity: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       publishing.current = false;
     }

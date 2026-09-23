@@ -133,7 +133,7 @@ components:
           type: string
         app:
           type: string
-          enum: [messages, instagram, echo, gallery, diary, notes, quickNotes, voice, music, studio, calendar, browser, calls, notifications, files, places]
+          enum: [messages, instagram, echo, gallery, diary, notes, quickNotes, voice, music, studio, calendar, browser, calls, notifications, files, places, contacts]
         type:
           type: string
         title:

@@ -1,5 +1,6 @@
 import type { ActivityProposal } from '@workspace/api-client-react';
 import type { PhoneStore } from './config';
+import { createContact } from './createContact';
 
 export type ReviewProposal = ActivityProposal & { reviewId: string };
 
@@ -8,7 +9,7 @@ const meta = (proposal: ReviewProposal, key: string): string => text(proposal.me
 const subtype = (proposal: ReviewProposal) => proposal.type.toLowerCase().replace(/[\s_-]+/g, ' ');
 
 export function publishActivity(store: PhoneStore, proposals: ReviewProposal[]): PhoneStore {
-  const next: PhoneStore = structuredClone(store);
+  let next: PhoneStore = structuredClone(store);
   const recorded = new Set(next.publishedProposalIds);
 
   for (const p of proposals) {
@@ -20,7 +21,18 @@ export function publishActivity(store: PhoneStore, proposals: ReviewProposal[]):
     const time = text(p.timestamp) || new Date().toISOString();
     const person = text(p.person);
     const type = subtype(p);
-    switch (p.app) {
+    // Older generated batches could label contact cards with a supported non-contact app
+    // because the API contract did not include Contacts. Respect their reviewed subtype.
+    const destination = /^(new )?contact( card)?$/.test(type) ? 'contacts' : p.app;
+    switch (destination) {
+      case 'contacts':
+        next = createContact(next, {
+          name: meta(p, 'name') || person || title,
+          role: meta(p, 'role') || type,
+          context: meta(p, 'context') || content,
+          color: meta(p, 'color') || undefined,
+        });
+        break;
       case 'diary':
         next.diary.unshift({ id, title, body: content, date: time, mood: meta(p, 'mood') || 'reflective' });
         break;
@@ -107,7 +119,7 @@ export function publishActivity(store: PhoneStore, proposals: ReviewProposal[]):
         next.notifications.unshift({ id, title, sub: content, icon: meta(p, 'icon') || 'story', color: '#d895a6', time });
         break;
       default:
-        throw new Error(`Unsupported activity destination: ${p.app}`);
+        throw new Error(`Unsupported activity destination: ${destination}`);
     }
     recorded.add(p.reviewId);
   }

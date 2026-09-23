@@ -1,0 +1,121 @@
+There is a persistence/data-binding bug in the existing Living Phone.
+
+DO NOT redesign anything and DO NOT delete, reset, migrate away, or overwrite any existing user content, uploaded photos, manually created entries, contacts, or settings.
+
+I have confirmed the following bug:
+
+1. I open Story Update / Generate Day.
+2. AI successfully generates proposed content.
+3. The Review screen displays it correctly.
+4. I press Accept/Approve.
+5. The app reports that the content was successfully saved.
+6. When I open the destination app, the new content DOES NOT EXIST.
+
+I have specifically reproduced this with Contacts:
+AI generated seven contact cards.
+I approved them.
+The app reported they were saved.
+I opened Contacts.
+None of them appeared.
+
+The same issue appears to affect generated Diary entries and potentially all other generated content.
+
+FIX THE ACTUAL DATA FLOW, not the UI.
+
+First inspect how manually created content in Edit Mode is currently saved and displayed.
+
+Then make AI-approved content use EXACTLY THE SAME persistent data store, schema, create functions, state updates, and retrieval system as manually created content.
+
+There must NOT be:
+
+* a separate AI-only database
+* temporary review state mistaken for saved data
+* mock success messages
+* disconnected localStorage keys
+* separate schemas for manual and AI content
+
+CONTACTS TEST:
+
+When an AI-generated Contact is approved:
+
+1. Normalize the generated contact into the exact Contact schema already used by the Contacts app.
+2. Assign a unique persistent ID.
+3. Save it through the same createContact/saveContact function used by Edit Mode.
+4. Update the Contacts application state immediately.
+5. Make it visible in Contacts without requiring a refresh.
+6. Persist it after refresh.
+7. Persist it after closing and reopening the installed PWA.
+
+If saving fails, DO NOT display “Saved.”
+
+Instead display the actual error.
+
+GENERALIZE THE FIX to:
+
+Contacts
+Diary
+Quick Notes
+Notes
+Messages
+Instagram Posts
+Instagram Stories
+Echo Posts
+Echo Drafts
+Gallery
+Browser Search History
+Browser History
+Calls
+Missed Calls
+Voicemails
+Voice Memos
+Music
+Studio
+Calendar
+Places
+Files
+Notifications
+
+Create one centralized function such as:
+
+commitGeneratedActivity(item)
+
+This function should inspect the generated item type and route it to the SAME repository/create function used by the corresponding manual Edit Mode.
+
+For example:
+
+contact → existing Contacts storage
+diary_entry → existing Diary storage
+quick_note → existing Quick Notes storage
+browser_search → existing Browser History storage
+echo_post → existing Echo storage
+instagram_post → existing Instagram storage
+call → existing Phone storage
+
+Do not duplicate persistence logic.
+
+IMPORTANT:
+The Review screen’s “Accept” button must only show a success state AFTER the database/storage operation confirms success.
+
+After successful insertion, remove the proposal from Pending Review.
+
+Prevent duplicate insertion if Accept is tapped twice.
+
+TEST BEFORE REPORTING THE FIX AS COMPLETE:
+
+Generate and approve:
+
+* 1 Contact
+* 1 Diary entry
+* 1 Quick Note
+* 1 Browser search
+* 1 Echo post
+
+Then programmatically verify that each record exists in the SAME persistent collection queried by its destination app.
+
+Navigate to each destination screen and verify it renders.
+
+Refresh the app and verify all five records still exist.
+
+Do not consider the issue fixed merely because the Review screen displays “Saved.”
+
+Preserve ALL existing data, especially uploaded Gallery photos.

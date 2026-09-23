@@ -26,4 +26,5 @@ export const ActivityProposalApp = {
   notifications: 'notifications',
   files: 'files',
   places: 'places',
+  contacts: 'contacts',
 } as const;

@@ -59,7 +59,7 @@ export const GenerateStoryActivityResponse = zod.object({
   "summary": zod.string(),
   "proposals": zod.array(zod.object({
   "id": zod.string(),
-  "app": zod.enum(['messages', 'instagram', 'echo', 'gallery', 'diary', 'notes', 'quickNotes', 'voice', 'music', 'studio', 'calendar', 'browser', 'calls', 'notifications', 'files', 'places']),
+  "app": zod.enum(['messages', 'instagram', 'echo', 'gallery', 'diary', 'notes', 'quickNotes', 'voice', 'music', 'studio', 'calendar', 'browser', 'calls', 'notifications', 'files', 'places', 'contacts']),
   "type": zod.string(),
   "title": zod.string(),
   "content": zod.string(),
