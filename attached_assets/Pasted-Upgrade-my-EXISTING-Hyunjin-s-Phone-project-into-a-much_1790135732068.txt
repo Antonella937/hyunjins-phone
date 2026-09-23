@@ -1,0 +1,622 @@
+Upgrade my EXISTING “Hyunjin’s Phone” project into a much deeper interactive “Living Phone” experience.
+
+IMPORTANT: Keep the current visual design, layout, aesthetic, existing apps, existing content, navigation, and functionality. DO NOT rebuild the project from scratch and DO NOT replace the interface I already have. Extend the existing app with the following features and apps.
+
+The entire experience is fictional roleplay content.
+
+────────────────────
+LIVING PHONE SYSTEM
+────────────────────
+
+Create a hidden/private Admin Mode called “Story Update” that is NOT displayed as a normal app on Hyunjin’s home screen.
+
+In Admin Mode, include a large text field where I can paste a summary of what recently happened in my external roleplay.
+
+Example:
+“Antonella and Hyunjin had coffee with Mar and Min-jae this morning. Antonella went to band rehearsal afterward. Hyunjin stayed home drawing for a while and they talked again before bed.”
+
+Add a button:
+
+✨ Generate Phone Activity
+
+The AI should analyze:
+
+* the new RP update
+* established canon
+* recent timeline
+* character personality
+* relationships
+* current location
+* existing phone content
+
+Then propose realistic digital traces of those events.
+
+Possible generated content:
+
+* Messages
+* Instagram activity
+* Echo activity
+* Gallery items
+* Diary entries
+* Notes
+* Quick Notes
+* Voice Memos
+* Music activity
+* Studio projects
+* Calendar events
+* Browser searches
+* Browsing history
+* Calls
+* Voicemails
+* Notifications
+* Files
+* Places
+* Screen Time activity
+
+DO NOT generate something for every app every time.
+
+Only generate activity that makes sense.
+
+────────────────────
+REVIEW BEFORE PUBLISHING
+────────────────────
+
+AI-generated content must NEVER immediately become canon.
+
+Create a review screen showing all proposed content grouped by app.
+
+Each item needs:
+✓ Approve
+✎ Edit
+✕ Delete
+
+Also provide:
+Approve All
+Regenerate
+Cancel
+
+Only approved content is added to the live phone.
+
+────────────────────
+CANON & MEMORY
+────────────────────
+
+Create a persistent editable Canon database containing:
+
+* Character information
+* Current location
+* Relationships
+* Friends
+* Contacts
+* Important memories
+* Relationship history
+* Current projects
+* Recent events
+* Recurring places
+* Preferences
+* Important dates
+* Ongoing storylines
+* Current emotional/contextual state
+
+User-written canon ALWAYS overrides generated content.
+
+Never let generated activity contradict established canon.
+
+Create a chronological Master Timeline where I can review and edit important RP events.
+
+────────────────────
+INSTAGRAM
+────────────────────
+
+Expand the existing Instagram app.
+
+Include:
+
+* Profile
+* Feed
+* Posts
+* Stories
+* Highlights
+* DMs
+* Saved
+* Tagged
+* Close Friends
+* Explore
+* Notifications
+* Draft posts
+* Draft Stories
+
+Allow fictional accounts belonging to existing RP contacts.
+
+Story Update may propose:
+posts, Stories, likes, comments, saved posts, DMs or other realistic Instagram activity.
+
+────────────────────
+ECHO — MICROBLOGGING
+────────────────────
+
+Add a fictional microblogging app called “Echo.”
+
+It should have its own identity while providing familiar short-form social-network functionality.
+
+Include:
+
+* Timeline
+* Hyunjin’s profile
+* Text posts
+* Image posts
+* Replies
+* Likes
+* Reposts
+* Bookmarks
+* Followers/following
+* Search
+* Fictional trending topics
+* Notifications
+* Drafts
+* Reply threads
+
+Existing contacts such as Antonella, Mar, Noah and others can have fictional Echo accounts.
+
+Content distinction:
+
+Instagram = visual and curated.
+Echo = spontaneous public thoughts, humor and conversations.
+Quick Notes = private spontaneous thoughts.
+Diary = long private reflections.
+Messages = private communication.
+
+Story Update may generate proposed Echo activity.
+
+────────────────────
+BROWSER / SEARCH
+────────────────────
+
+Add a fictional smartphone Browser.
+
+Include:
+
+* Search/address bar
+* Search history
+* Browsing history
+* Tabs
+* Private tabs
+* Favorites
+* Bookmarks
+* Downloads
+* Recently closed tabs
+* Search suggestions
+
+History entries need timestamps.
+
+The Living Phone AI may generate believable searches based on RP events.
+
+Examples:
+art references
+translations
+restaurants
+places
+travel research
+gift ideas
+music questions
+random late-night questions
+things Antonella mentioned
+practical everyday searches
+
+Allow all entries to be manually edited or deleted.
+
+────────────────────
+PHONE / CALLS
+────────────────────
+
+Add a complete Phone app.
+
+Include:
+
+* Favorites
+* Recents
+* Contacts
+* Keypad
+* Incoming calls
+* Outgoing calls
+* Missed calls
+* Call duration
+* Date/time
+* Voicemail
+
+Contacts should connect with the existing Contacts app.
+
+Include a fictional incoming-call interface with:
+Accept
+Decline
+
+Voicemail supports:
+
+* sender
+* duration
+* timestamp
+* waveform
+* play/pause
+* optional transcript
+
+Story Updates may generate proposed calls or missed calls when supported by the RP.
+
+Never invent the contents of an important conversation merely because a call happened.
+
+────────────────────
+STUDIO
+────────────────────
+
+Add a creative music-making app called “Studio.”
+
+Sections:
+
+* New Track
+* Demos
+* Projects
+* Lyrics
+* Voice Ideas
+* Unfinished
+* Finished
+
+Each project can contain:
+title
+date
+mood
+genre
+description
+lyrics
+notes
+cover image
+audio file
+status
+
+Include an AI music-generation interface.
+
+The user should be able to describe a track using:
+
+* mood
+* genre
+* instruments
+* tempo
+* lyrical theme
+* vocal/instrumental preference
+* duration
+
+Architect the feature so an external AI music-generation API can be connected securely later.
+
+DO NOT expose API keys in frontend code.
+
+If no music API is currently configured, Studio should still work using mock/generated demo metadata and uploaded audio.
+
+Generated songs can later appear in Music, Files and Studio.
+
+────────────────────
+DIARY
+────────────────────
+
+Keep and expand Diary.
+
+Diary entries are longer private reflections.
+
+Include:
+date
+time
+title
+mood
+entry
+optional related memory/photo/song
+
+Include search and chronological browsing.
+
+────────────────────
+QUICK NOTES
+────────────────────
+
+Keep Quick Notes separate from Notes.
+
+These should be extremely short spontaneous private thoughts.
+
+Include timestamps.
+
+Examples:
+“buy coffee”
+“ask Antonella about that tattoo”
+“remember this color”
+“charger.”
+“why is Miguel sleeping there again”
+
+────────────────────
+NOTES
+────────────────────
+
+Notes are longer practical or creative notes.
+
+Categories can include:
+Design
+Art
+Music
+Lists
+Ideas
+Projects
+Personal
+Lyrics
+References
+
+────────────────────
+VOICE MEMOS
+────────────────────
+
+Expand Voice Memos.
+
+Include:
+
+* Recorded
+* Sent
+* Private
+* Musical Ideas
+
+Each recording includes:
+title
+timestamp
+duration
+waveform
+play/pause
+optional transcript
+optional uploaded audio file
+
+────────────────────
+GALLERY
+────────────────────
+
+Expand Gallery.
+
+Include:
+
+* Recents
+* Favorites
+* Screenshots
+* Videos
+* Seoul
+* Buenos Aires
+* Antonella
+* Friends
+* Art
+* Design
+* Random
+* Hidden
+
+Photos open fullscreen.
+
+Allow:
+favorite
+caption
+date
+album
+metadata
+related memory
+
+Support uploaded images later.
+
+────────────────────
+MUSIC
+────────────────────
+
+Expand Music.
+
+Include:
+Now Playing
+Recently Played
+Playlists
+Favorites
+Albums
+Artists
+Songs
+Memory-associated songs
+Studio creations
+
+Do not automatically include copyrighted audio files.
+
+Allow uploaded or properly linked audio.
+
+────────────────────
+MAPS / PLACES
+────────────────────
+
+Add Places.
+
+This is a fictional location/history layer for the RP.
+
+Include:
+
+* Favorites
+* Recently viewed
+* Saved places
+* Seoul
+* Buenos Aires
+* Cafés
+* Art locations
+* Restaurants
+* Important RP locations
+* Want to Visit
+
+Browser searches for locations can optionally be saved here.
+
+────────────────────
+SCREEN TIME
+────────────────────
+
+Add Screen Time.
+
+Show:
+
+* Today
+* Week
+* total screen time
+* most-used apps
+* pickups
+* notifications
+* communication activity
+
+Whenever possible, calculate this from actual simulated phone activity instead of randomly inventing numbers.
+
+Example categories:
+Messages
+Instagram
+Echo
+Music
+Browser
+Gallery
+Studio
+
+Include “Most Contacted” based on simulated communication activity.
+
+────────────────────
+FILES
+────────────────────
+
+Expand Files.
+
+Include folders such as:
+Design
+Art
+References
+Music
+Studio
+Sketches
+Documents
+Downloads
+Shared
+Personal Projects
+
+Allow relationships between Files and other apps.
+
+────────────────────
+SECRET SPACE
+────────────────────
+
+Keep/create Secret Space.
+
+Make it discreet and protected with a fictional Face-ID/passcode-style animation.
+
+Sections:
+Private Diary
+Inner Thoughts
+Private Voice Memos
+Memories
+Things About Antonella
+Unfinished Ideas
+Locked Memories
+Private Gallery
+
+This is entirely fictional RP content.
+
+────────────────────
+CROSS-APP ACTIVITY
+────────────────────
+
+Apps should feel connected.
+
+Examples:
+
+A Browser search for a café may later appear in Places.
+
+A Gallery photo may be attached to an Instagram post.
+
+A Studio demo may appear in Music.
+
+A missed call creates a Notification.
+
+A Voice Memo may belong to a Studio project.
+
+A song may be linked to a Diary memory.
+
+An Instagram post can use a Gallery photo.
+
+An Echo draft may remain unpublished.
+
+A call with Antonella appears in Recents.
+
+A Story Update can affect several related apps when logically appropriate.
+
+────────────────────
+GENERATE DAY
+────────────────────
+
+Add an optional “Generate Day” tool inside Admin Mode.
+
+I provide a small amount of context such as:
+
+“Saturday. Hyunjin stayed home drawing while Antonella went to rehearsal.”
+
+The AI may invent SMALL mundane activities consistent with established canon.
+
+Examples:
+coffee
+drawing
+music
+ordinary searches
+small notes
+minor social-media interactions
+casual messages
+daily routines
+
+It MUST NOT invent major canon events such as:
+breakups
+marriages
+major fights
+pregnancy
+death
+travel
+major career changes
+relationship changes
+important confessions
+
+unless explicitly provided by me.
+
+────────────────────
+EDIT MODE
+────────────────────
+
+I need to be able to manually create, edit and delete content in EVERY app without editing source code.
+
+Provide a discreet Edit/Admin Mode.
+
+────────────────────
+PERSISTENCE
+────────────────────
+
+Store all content persistently.
+
+Use a proper structured database architecture for dynamic content.
+
+If authentication/cloud storage is not configured yet, preserve the existing local data and design the system so cloud persistence can be added later.
+
+Never destroy existing user-created content during upgrades.
+
+────────────────────
+PWA / IPHONE EXPERIENCE
+────────────────────
+
+Keep the app installable as a PWA.
+
+Optimize for iPhone.
+
+Maintain:
+
+* standalone mode
+* Home Screen icon
+* splash screen
+* safe areas
+* Dynamic-Island spacing
+* smooth app-opening animations
+* smooth back navigation
+* offline access to previously loaded core content where possible
+
+The phone should feel like a beautiful premium fictional smartphone rather than a website containing a grid of buttons.
+
+Maintain the existing dark, elegant, artistic visual design that I already like.
+
+Do not redesign the existing app unless required for one of these new features.
+
+The final goal is a persistent fictional “Living Phone” that evolves alongside my external Kindroid roleplay and gives the impression that Hyunjin has a life happening beyond the main chat.
