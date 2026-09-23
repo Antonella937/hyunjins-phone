@@ -12,12 +12,16 @@ export type PhoneMessage = { id: string; person: string; initials: string; previ
 export type DiaryEntry = { id: string; date: string; title: string; mood: string; body: string };
 export type QuickNote = { id: string; text: string; time: string; color: string };
 export type CalendarEvent = { id: string; day: number; title: string; time: string; kind: string };
-export type Contact = { id: string; name: string; initials: string; role: string; context: string; color: string };
+export type Contact = {
+  id: string; name: string; initials: string; role: string; context: string; color: string;
+  firstName?: string; lastName?: string; nickname?: string; relationship?: string;
+  notes?: string; favorite?: boolean; photoDataUrl?: string;
+};
 export type GalleryItem = { id: string; title: string; album: string; date: string; caption: string; tone: string; favorite?: boolean; dataUrl?: string };
 export type Post = { id: string; user: string; caption: string; time: string; tone: string; likes: number; saved?: boolean; dataUrl?: string };
 export type VoiceMemo = {
   id: string; title: string; date: string; duration: string; transcript: string; private?: boolean;
-  context?: string; delivery?: string; category?: string; relatedEvent?: string;
+  context?: string; delivery?: string; category?: string; relatedEvent?: string; relatedContactId?: string;
   language?: 'English' | 'Korean' | 'Mixed'; voiceId?: 'alloy' | 'echo' | 'onyx';
   audioId?: string; durationSeconds?: number;
 };
@@ -34,6 +38,7 @@ export type StudioProject = { id: string; title: string; status: 'demo' | 'unfin
 export type Place = { id: string; name: string; category: string; location: string; notes?: string; saved?: boolean };
 export type InstagramStory = { id: string; user: string; caption: string; time: string; dataUrl?: string; source?: 'ai-generated' };
 export type MusicActivity = { id: string; title: string; content: string; time: string; source?: 'ai-generated' };
+export type MusicPlaylist = { id: string; name: string; songs: string[]; description?: string; artwork?: string };
 
 export type Canon = {
   character: string;
@@ -175,6 +180,12 @@ export const seedPhone = {
   instagramStories: [] as InstagramStory[],
   echoDrafts: [] as EchoPost[],
   browserSearches: [] as BrowserHistory[],
+  musicPlaylists: [
+    { id: 'playlist-night-walks', name: 'night walks', songs: ['Pink + White', 'The Louvre', 'Garden Song', 'Mystery of Love', 'Nights'] },
+    { id: 'playlist-for-antonella', name: 'for Antonella', songs: ['Pink + White', 'The Louvre', 'Garden Song', 'Mystery of Love', 'Nights'] },
+    { id: 'playlist-studio-light', name: 'studio light', songs: ['Pink + White', 'The Louvre', 'Garden Song', 'Mystery of Love', 'Nights'] },
+    { id: 'playlist-memory-14', name: 'memory 14', songs: ['Pink + White', 'The Louvre', 'Garden Song', 'Mystery of Love', 'Nights'] },
+  ] as MusicPlaylist[],
   musicActivity: [] as MusicActivity[],
   publishedProposalIds: [] as string[],
   canon: seedCanon

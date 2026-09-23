@@ -131,6 +131,12 @@ export function useHealthCheck<TData = Awaited<ReturnType<typeof healthCheck>>, 
   return withQueryKey(query, queryOptions.queryKey);
 }
 
+
+
+
+
+
+
 export const getGetStoryProvidersUrl = () => {
 
 
@@ -201,6 +207,13 @@ export function useGetStoryProviders<TData = Awaited<ReturnType<typeof getStoryP
 
   return withQueryKey(query, queryOptions.queryKey);
 }
+
+
+
+
+
+
+
 export const getGenerateStoryActivityUrl = () => {
 
 
@@ -553,6 +566,94 @@ export const useGenerateVoiceAudio = <TError = ErrorType<void>,
       return useMutation(getGenerateVoiceAudioMutationOptions(options));
     }
 
+export const getUploadVoiceAudioUrl = () => {
+
+
+
+
+  return `/api/story/voice/upload`
+}
+
+/**
+ * @summary Persist manually uploaded voice audio
+ */
+export const uploadVoiceAudio = async (uploadVoiceAudioBody: Blob, options?: Parameters<typeof customFetch>[1]): Promise<VoiceAudioResult> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<VoiceAudioResult>(getUploadVoiceAudioUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/octet-stream', ...getHeaders(options?.headers) },
+    body: uploadVoiceAudioBody
+  }
+);}
+
+
+
+
+
+export const getUploadVoiceAudioMutationKey = () => ['uploadVoiceAudio'] as const;
+
+export const getUploadVoiceAudioMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadVoiceAudio>>, TError,UploadVoiceAudioMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof uploadVoiceAudio>>, TError,UploadVoiceAudioMutationVariables, TContext> => {
+
+const mutationKey = getUploadVoiceAudioMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof uploadVoiceAudio>>, UploadVoiceAudioMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  uploadVoiceAudio(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UploadVoiceAudioMutationResult = NonNullable<Awaited<ReturnType<typeof uploadVoiceAudio>>>
+    export type UploadVoiceAudioMutationBody = BodyType<Blob>
+    export type UploadVoiceAudioMutationError = ErrorType<void>
+    export type UploadVoiceAudioMutationVariables = {data: BodyType<Blob>}
+
+    /**
+ * @summary Persist manually uploaded voice audio
+ */
+export const useUploadVoiceAudio = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadVoiceAudio>>, TError,UploadVoiceAudioMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof uploadVoiceAudio>>,
+        TError,
+        UploadVoiceAudioMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUploadVoiceAudioMutationOptions(options));
+    }
+
 export const getGetVoiceAudioUrl = (audioId: string,) => {
 
 
@@ -623,3 +724,10 @@ export function useGetVoiceAudio<TData = Awaited<ReturnType<typeof getVoiceAudio
 
   return withQueryKey(query, queryOptions.queryKey);
 }
+
+
+
+
+
+
+

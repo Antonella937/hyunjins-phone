@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, raw } from "express";
 import OpenAI from "openai";
 import { loadVoiceAudio, saveVoiceAudio, normalizeWav } from "../lib/voiceAudioStorage";
 import {
@@ -225,9 +225,30 @@ router.post("/story/voice/audio", async (req, res) => {
   }
 });
 
+router.post("/story/voice/upload", raw({ type: "application/octet-stream", limit: "15mb" }), async (req, res) => {
+  const data = req.body;
+  const durationSeconds = Number(req.header("X-Audio-Duration"));
+  if (!Buffer.isBuffer(data) || data.length < 64 || !Number.isFinite(durationSeconds) || durationSeconds <= 0 || durationSeconds > 7200) {
+    res.status(400).json({ error: "Provide a playable audio file with a valid duration." }); return;
+  }
+  const mime = data.toString("ascii", 0, 4) === "RIFF" && data.toString("ascii", 8, 12) === "WAVE" ? "audio/wav"
+    : data.toString("ascii", 0, 3) === "ID3" || (data[0] === 0xff && (data[1] & 0xe0) === 0xe0) ? "audio/mpeg"
+    : data.toString("ascii", 4, 8) === "ftyp" ? "audio/mp4"
+    : data.toString("ascii", 0, 4) === "OggS" ? "audio/ogg"
+    : data.subarray(0, 4).equals(Buffer.from([0x1a, 0x45, 0xdf, 0xa3])) ? "audio/webm" : null;
+  if (!mime) { res.status(400).json({ error: "Supported audio formats: WAV, MP3, M4A, OGG, or WebM." }); return; }
+  try {
+    const audioId = await saveVoiceAudio(data, mime);
+    res.json(GenerateVoiceAudioResponse.parse({ audioId, durationSeconds }));
+  } catch (error) {
+    req.log.error({ err: error }, "Voice audio upload failed");
+    res.status(503).json({ error: "Could not persist the uploaded audio." });
+  }
+});
+
 router.get("/story/voice/audio/:audioId", async (req, res) => {
   try {
-    const { file, size } = await loadVoiceAudio(String(req.params.audioId));
+    const { file, size, contentType } = await loadVoiceAudio(String(req.params.audioId));
     const rangeHeader = req.headers.range;
     const range = rangeHeader?.match(/^bytes=(\d*)-(\d*)$/);
     if (rangeHeader && (!range || (!range[1] && !range[2]))) {
@@ -239,7 +260,7 @@ router.get("/story/voice/audio/:audioId", async (req, res) => {
     if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start >= size || start > end || size <= 0) {
       res.status(416).set("Content-Range", `bytes */${size}`).end(); return;
     }
-    res.set({ "Content-Type": "audio/wav", "Accept-Ranges": "bytes", "Cache-Control": "private, max-age=3600", "Content-Length": String(end - start + 1) });
+    res.set({ "Content-Type": contentType, "Accept-Ranges": "bytes", "Cache-Control": "private, max-age=3600", "Content-Length": String(end - start + 1) });
     if (rangeHeader) res.status(206).set("Content-Range", `bytes ${start}-${end}/${size}`);
     file.createReadStream({ start, end }).on("error", error => {
       req.log.error({ err: error }, "Voice audio streaming failed");

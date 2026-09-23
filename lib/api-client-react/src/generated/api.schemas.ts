@@ -5,6 +5,11 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+/**
+ * Raw audio bytes, up to 15 MB
+ */
+export type VoiceAudioFile = string;
+
 export type VoiceTranscriptInputLanguage = typeof VoiceTranscriptInputLanguage[keyof typeof VoiceTranscriptInputLanguage];
 
 

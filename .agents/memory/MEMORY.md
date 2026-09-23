@@ -1,0 +1,1 @@
+- [Raw audio OpenAPI contract](raw-audio-openapi.md) — binary format codegen requires a DOM Blob type unavailable to the server schema library; keep raw upload contracts compatible.

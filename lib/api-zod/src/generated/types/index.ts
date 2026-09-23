@@ -19,6 +19,7 @@ export * from './storyGenerationInputMode';
 export * from './storyGenerationResult';
 export * from './storyImageInput';
 export * from './storyImageResult';
+export * from './voiceAudioFile';
 export * from './voiceAudioInput';
 export * from './voiceAudioInputLanguage';
 export * from './voiceAudioInputVoice';

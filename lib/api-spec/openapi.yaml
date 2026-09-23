@@ -120,6 +120,26 @@ paths:
                 $ref: "#/components/schemas/VoiceAudioResult"
         "503":
           description: Audio provider or storage unavailable
+  /story/voice/upload:
+    post:
+      operationId: uploadVoiceAudio
+      tags: [story]
+      summary: Persist manually uploaded voice audio
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              $ref: "#/components/schemas/VoiceAudioFile"
+      responses:
+        "200":
+          description: Persistent uploaded audio
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VoiceAudioResult"
+        "400":
+          description: Invalid or unsupported audio
   /story/voice/audio/{audioId}:
     get:
       operationId: getVoiceAudio
@@ -143,6 +163,9 @@ paths:
           description: Audio not found
 components:
   schemas:
+    VoiceAudioFile:
+      type: string
+      description: Raw audio bytes, up to 15 MB
     VoiceTranscriptInput:
       type: object
       required: [prompt, language]

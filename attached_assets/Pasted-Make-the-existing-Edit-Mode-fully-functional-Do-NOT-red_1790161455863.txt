@@ -1,0 +1,158 @@
+Make the existing Edit Mode fully functional. Do NOT redesign the app, reset the database, delete existing user content, or change the current visual style.
+
+CURRENT PROBLEM:
+The Edit Mode button exists, but it does not actually let me manually edit or delete existing content. For example, I need to delete old Contacts and rename existing Contacts, but there are no functional editing controls.
+
+GOAL:
+When Edit Mode is ON, I must be able to manually CREATE, EDIT and DELETE content throughout the phone, with all changes saved persistently.
+
+CONTACTS — PRIORITY TEST
+
+When Edit Mode is ON and I open Contacts:
+
+Each existing contact must have:
+
+* Edit
+* Delete
+
+Also add:
+
+* New Contact
+
+EDIT CONTACT:
+Tapping Edit should open the existing contact in an editable form.
+
+Allow editing:
+
+* Display Name
+* First Name
+* Last Name
+* Nickname
+* Relationship
+* Notes
+* Favorite
+* Contact Photo
+
+Save must UPDATE the existing record, not create a duplicate.
+
+Example:
+Antonella → Edit → Display Name: Nela → Save
+
+The existing Antonella contact should become Nela.
+
+DELETE CONTACT:
+Tapping Delete must show:
+
+“Delete this contact?”
+
+Cancel | Delete
+
+After confirmation:
+
+* permanently delete that contact from the Contacts database
+* immediately remove it from the visible list
+* keep it deleted after refresh
+* keep it deleted after closing and reopening the PWA
+
+Deleting a Contact must NOT automatically delete historical Messages, Calls, Gallery items, Diary entries or other records.
+
+NEW CONTACT:
+
+* New Contact must open a blank Contact form and permanently save the new Contact.
+
+EDIT MODE ACROSS THE PHONE
+
+Apply the same manual management system where appropriate to:
+
+Contacts
+Diary
+Quick Notes
+Notes
+Messages
+Instagram posts
+Instagram stories
+Echo posts
+Echo drafts
+Gallery
+Voice Memos
+Browser/Search History
+Calls
+Voicemails
+Music
+Studio
+Calendar
+Places
+Files
+Notifications
+
+Depending on content type, provide:
+
+* Add
+    Edit
+    Delete
+
+GALLERY:
+Allow editing title, caption, album, date/time and favorite status, replacing/uploading an image, and deleting a Gallery item.
+
+VOICE MEMOS:
+Allow editing title, transcript, date/time, category and related contact; uploading/replacing audio; generating audio when available; and deleting the memo.
+
+DIARY / NOTES:
+Allow full manual text editing, date editing and deletion.
+
+MESSAGES:
+Allow manual creation, editing and deletion of fictional RP messages.
+
+CALLS:
+Allow fictional call records to be added, edited and deleted.
+
+EDIT MODE UX:
+When Edit Mode is enabled, show a subtle persistent “Edit Mode ON” indicator.
+
+Editing controls should only appear while Edit Mode is ON so the normal phone interface remains clean.
+
+Every editing form must have:
+Save
+Cancel
+
+DATA / PERSISTENCE:
+Edit Mode MUST use the exact same persistent data stores and schemas that the normal phone apps read.
+
+Do not create a separate Edit Mode database or temporary state.
+
+Save/Delete/Create must update the real persistent record.
+
+Never display “Saved” or “Deleted” until the persistence operation actually succeeds.
+
+Do not use temporary local-only changes that disappear after refresh.
+
+DATA SAFETY:
+Preserve all existing:
+
+* Gallery photos
+* generated content
+* Voice Memos and audio
+* Contacts
+* Story Updates
+* Canon
+* Timeline
+* settings
+
+Do NOT wipe or recreate the database.
+
+TEST CONTACTS BEFORE REPORTING SUCCESS:
+
+1. Enable Edit Mode.
+2. Open an existing Contact.
+3. Edit its Display Name.
+4. Save it.
+5. Verify the visible Contact updates.
+6. Refresh and verify the change remains.
+7. Delete another Contact.
+8. Confirm deletion.
+9. Verify it disappears.
+10. Refresh and verify it remains deleted.
+11. Create one test Contact.
+12. Refresh and verify it remains.
+
+Only consider Edit Mode fixed when CREATE, EDIT and DELETE actually persist after refresh.

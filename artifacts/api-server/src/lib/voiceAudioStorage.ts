@@ -28,16 +28,16 @@ function audioFile(id: string) {
   return storage.bucket(bucket).file([...parts, "voice-memos", `${id}.wav`].join("/"));
 }
 
-export async function saveVoiceAudio(wav: Buffer) {
+export async function saveVoiceAudio(wav: Buffer, contentType = "audio/wav") {
   const audioId = randomUUID();
-  await audioFile(audioId).save(wav, { contentType: "audio/wav", resumable: false });
+  await audioFile(audioId).save(wav, { contentType, resumable: false });
   return audioId;
 }
 
 export async function loadVoiceAudio(id: string) {
   const file = audioFile(id);
   const [metadata] = await file.getMetadata();
-  return { file, size: Number(metadata.size) };
+  return { file, size: Number(metadata.size), contentType: String(metadata.contentType || "audio/wav") };
 }
 
 export function normalizeWav(wav: Buffer) {

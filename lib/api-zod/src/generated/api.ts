@@ -135,6 +135,15 @@ export const GenerateVoiceAudioResponse = zod.object({
 
 
 /**
+ * @summary Persist manually uploaded voice audio
+ */
+export const UploadVoiceAudioResponse = zod.object({
+  "audioId": zod.string(),
+  "durationSeconds": zod.number()
+})
+
+
+/**
  * @summary Stream persistent generated voice audio
  */
 export const GetVoiceAudioParams = zod.object({
