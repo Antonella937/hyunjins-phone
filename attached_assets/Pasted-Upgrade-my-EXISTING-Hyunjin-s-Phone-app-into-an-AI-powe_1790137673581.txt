@@ -1,0 +1,728 @@
+Upgrade my EXISTING “Hyunjin’s Phone” app into an AI-powered Living Phone.
+
+IMPORTANT: DO NOT rebuild the app from scratch. DO NOT replace the current visual design, home screen, theme, layout, existing apps, Edit Mode, existing content, PWA configuration, or navigation. I already like the current design. Extend the existing project while preserving everything that already works.
+
+This is a fictional roleplay companion app. All private activity shown inside the phone is fictional RP content.
+
+MAIN GOAL:
+I use Kindroid separately for roleplay. I want to periodically paste a short summary of what happened in the RP into this phone. AI should interpret that context and create believable new activity across Hyunjin’s fictional phone automatically.
+
+────────────────────
+
+1. AI STORY UPDATE
+    ────────────────────
+
+Inside the existing Edit/Admin Mode, add:
+
+✨ STORY UPDATE
+
+Include a large text box where I can paste recent RP context.
+
+Example:
+
+“Saturday. Antonella went to band rehearsal in the afternoon. Hyunjin stayed home drawing. Later they met Mar and Noah for dinner. When they came home Antonella fell asleep while Hyunjin stayed awake sketching.”
+
+Add:
+
+✨ GENERATE PHONE ACTIVITY
+
+The AI should analyze:
+
+* Story Update
+* Hyunjin’s character profile
+* established canon
+* current location
+* relationships
+* contacts
+* recent events
+* master timeline
+* existing phone content
+
+Then generate realistic digital traces of the day.
+
+DO NOT generate something for every app.
+
+Different updates should produce different combinations of activity.
+
+Possible activity includes:
+Messages
+Calls
+Missed Calls
+Voicemails
+Instagram
+Instagram Stories
+Echo posts
+Echo drafts
+Gallery photos
+Diary entries
+Notes
+Quick Notes
+Voice Memos
+Music activity
+Studio projects
+Browser searches
+Browsing history
+Calendar
+Notifications
+Places
+Files
+
+────────────────────
+2. REVIEW SYSTEM
+────────────────────
+
+Before adding generated content, show:
+
+REVIEW GENERATED ACTIVITY
+
+Group proposed content by app.
+
+Each item needs:
+✓ Approve
+✎ Edit
+✕ Delete
+
+Also:
+Approve All
+Regenerate
+Cancel
+
+Only approved content becomes part of the phone.
+
+────────────────────
+3. CANON + MEMORY
+────────────────────
+
+Inside Admin Mode create editable sections for:
+
+Character
+Current Location
+Relationships
+Friends
+Contacts
+Important Memories
+Recent Events
+Current Projects
+Preferences
+Recurring Places
+Important Dates
+Ongoing Storylines
+Relationship History
+Master Timeline
+
+User-written canon ALWAYS overrides AI-generated information.
+
+AI must never contradict established canon.
+
+Do not invent major life events unless explicitly provided by me.
+
+────────────────────
+4. PHONE / CALLS
+────────────────────
+
+Add a complete Phone app.
+
+Include:
+
+Favorites
+Recents
+Contacts
+Keypad
+Voicemail
+
+Call records need:
+
+Contact
+Incoming / Outgoing / Missed
+Date
+Time
+Duration
+
+Create a realistic fictional incoming-call screen with:
+
+Accept
+Decline
+
+Individual contacts should have their own call history.
+
+Voicemail should support:
+
+Sender
+Timestamp
+Duration
+Waveform
+Play/Pause
+Transcript
+
+Story Update may generate calls only when logically supported by the context.
+
+Do not invent the content of important conversations simply because a call occurred.
+
+────────────────────
+5. BROWSER + SEARCH HISTORY
+────────────────────
+
+Add a smartphone Browser.
+
+Include:
+
+Search/address bar
+Search history
+Browsing history
+Tabs
+Private tabs
+Bookmarks
+Favorites
+Downloads
+Recently closed tabs
+
+Every history item should have a timestamp.
+
+AI may generate believable searches based on RP events.
+
+Examples:
+
+art references
+design questions
+translations
+music
+restaurants
+Buenos Aires
+Seoul
+travel
+gifts
+tattoos
+places
+random questions
+things Antonella mentioned
+late-night curiosity
+
+Search history should reveal small believable details about his life without constantly revolving around Antonella.
+
+────────────────────
+6. ECHO
+────────────────────
+
+Add a fictional microblogging app called Echo.
+
+Do NOT directly copy Twitter/X branding.
+
+Include:
+
+Timeline
+Profile
+Posts
+Replies
+Likes
+Reposts
+Bookmarks
+Followers
+Following
+Search
+Trends
+Notifications
+Drafts
+Threads
+
+Existing RP contacts can have fictional Echo accounts.
+
+Content distinction:
+
+Instagram = visual and curated.
+Echo = spontaneous public thoughts, jokes and conversations.
+Quick Notes = private spontaneous thoughts.
+Diary = long private reflections.
+Messages = private communication.
+
+AI should sometimes generate Echo drafts that Hyunjin never publishes.
+
+────────────────────
+7. AI DIARY
+────────────────────
+
+Expand Diary so AI can generate longer private entries based on RP events.
+
+Each entry supports:
+
+Date
+Time
+Title
+Mood
+Entry
+Tags
+Related people
+Related photo
+Related song
+Related memory
+
+Diary writing should feel personal, reflective and natural.
+
+Not every entry should be about Antonella.
+
+Hyunjin should also reflect on:
+
+art
+music
+work
+friends
+creative blocks
+Seoul
+Buenos Aires
+daily life
+identity
+projects
+small observations
+
+────────────────────
+8. AI QUICK NOTES + NOTES
+────────────────────
+
+Quick Notes should contain tiny spontaneous private thoughts.
+
+Examples:
+
+“buy coffee”
+“charger.”
+“fix that sketch”
+“ask her about the tattoo”
+“why is Miguel sleeping there”
+
+Notes should contain longer organized ideas:
+
+Art
+Design
+Music
+Projects
+Lists
+Lyrics
+References
+Personal
+
+AI may generate both when appropriate.
+
+────────────────────
+9. AI IMAGE GENERATION
+────────────────────
+
+Add AI image-generation support to Gallery.
+
+Inside Gallery and Story Update, allow:
+
+✨ Generate Image
+
+Images should be generated from RP context.
+
+Examples:
+
+coffee on a table
+a messy sketchbook
+Seoul at night
+Buenos Aires rain
+studio equipment
+art supplies
+a blurry casual snapshot
+a restaurant table
+a design project
+
+Generated images should feel like believable phone photos rather than polished promotional artwork when appropriate.
+
+Each generated image needs:
+
+Date
+Time
+Caption
+Album
+Favorite
+Related event
+
+IMPORTANT:
+
+Build image generation using a secure BACKEND integration point for an external image-generation API.
+
+NEVER expose API keys in frontend code.
+
+If no image API is configured, show a clear “Image provider not connected” state and allow manual image upload instead.
+
+Do NOT fake successful AI image generation.
+
+────────────────────
+10. STUDIO + AI MUSIC
+────────────────────
+
+Add a creative app called:
+
+🎧 STUDIO
+
+Sections:
+
+New Track
+Demos
+Projects
+Lyrics
+Voice Ideas
+Unfinished
+Finished
+
+Track/project fields:
+
+Title
+Date
+Mood
+Genre
+Tempo
+Instruments
+Theme
+Lyrics
+Notes
+Duration
+Cover
+Audio
+Status
+
+Add:
+
+✨ GENERATE SONG
+
+Allow me or Story Update to provide:
+
+Mood
+Genre
+Tempo
+Instruments
+Theme
+Lyrics prompt
+Vocal / Instrumental
+Duration
+
+Build a secure backend integration point for an external AI music-generation API.
+
+NEVER put API keys in browser/frontend code.
+
+If no music provider is connected, show:
+
+“AI Music Provider Not Connected”
+
+and allow manual audio uploads.
+
+Do NOT pretend an audio file was generated when no provider exists.
+
+Generated tracks should automatically become available in:
+
+Studio
+Music
+Files
+
+when approved.
+
+────────────────────
+11. VOICE MEMOS
+────────────────────
+
+Expand Voice Memos.
+
+Categories:
+
+Recorded
+Sent
+Private
+Music Ideas
+
+Each memo supports:
+
+Title
+Date
+Time
+Duration
+Waveform
+Play/Pause
+Transcript
+Audio file
+Related person/project/event
+
+AI may generate transcripts and metadata.
+
+Actual audio generation should only happen when an appropriate audio API is connected.
+
+────────────────────
+12. INSTAGRAM
+────────────────────
+
+Expand the existing Instagram simulation.
+
+Include:
+
+Profile
+Feed
+Posts
+Stories
+Highlights
+DMs
+Explore
+Saved
+Tagged
+Close Friends
+Notifications
+Drafts
+
+AI-generated Story Updates may propose:
+
+new posts
+Stories
+captions
+comments
+likes
+saved content
+drafts
+
+Generated Gallery images can be used for Instagram posts and Stories.
+
+────────────────────
+13. GALLERY
+────────────────────
+
+Expand Gallery with:
+
+Recents
+Favorites
+Screenshots
+Videos
+Seoul
+Buenos Aires
+Antonella
+Friends
+Art
+Design
+Random
+Hidden
+
+Photos should open fullscreen.
+
+Allow manual upload AND AI-generated images.
+
+────────────────────
+14. MUSIC
+────────────────────
+
+Expand Music with:
+
+Now Playing
+Recently Played
+Songs
+Artists
+Albums
+Favorites
+Playlists
+Memory-associated songs
+Studio Creations
+
+Do not automatically provide copyrighted audio.
+
+AI-generated Studio tracks and user-uploaded audio can play here.
+
+────────────────────
+15. SCREEN TIME
+────────────────────
+
+Add Screen Time.
+
+Include:
+
+Today
+Week
+Total Screen Time
+Most Used Apps
+Pickups
+Notifications
+Communication Activity
+Most Contacted
+
+Whenever possible calculate statistics from actual simulated phone activity instead of inventing random numbers.
+
+────────────────────
+16. PLACES
+────────────────────
+
+Add Places.
+
+Include:
+
+Favorites
+Recent
+Saved
+Seoul
+Buenos Aires
+Cafés
+Restaurants
+Art
+Music
+Important RP Locations
+Want to Visit
+
+Browser searches for places can optionally connect to Places.
+
+────────────────────
+17. CROSS-APP CONNECTIONS
+────────────────────
+
+Make apps interact naturally.
+
+Examples:
+
+Browser search → Places
+Gallery image → Instagram
+Gallery image → Diary
+Studio track → Music
+Studio project → Files
+Voice Memo → Studio
+Missed Call → Notification
+Voicemail → Phone + Notification
+Song → Diary memory
+Echo post → Notification
+Calendar event → Notification
+Call → Recents
+Story photo → Gallery
+
+The same event should not be duplicated unnaturally everywhere.
+
+────────────────────
+18. GENERATE DAY
+────────────────────
+
+Inside Admin Mode add:
+
+✨ GENERATE DAY
+
+I provide a small amount of context.
+
+Example:
+
+“Sunday. Antonella has rehearsal. Hyunjin is home working on art.”
+
+AI may invent SMALL mundane background activity consistent with canon.
+
+Examples:
+
+coffee
+drawing
+music
+small searches
+ordinary notes
+social media activity
+minor conversations
+creative work
+daily routines
+
+NEVER invent major canon such as:
+
+marriage
+breakup
+pregnancy
+death
+major fight
+travel
+major career changes
+major relationship changes
+important confessions
+
+unless explicitly included in my Story Update.
+
+────────────────────
+19. CHARACTER AUTONOMY
+────────────────────
+
+VERY IMPORTANT:
+
+Hyunjin must feel like he has his OWN life.
+
+Generated content should not make every app, thought, search, Diary entry or social post about Antonella.
+
+Balance content between:
+
+Antonella
+friends
+art
+music
+work
+creative projects
+daily routines
+Seoul
+Buenos Aires
+personal interests
+humor
+random thoughts
+mundane life
+
+His phone should feel inhabited by a whole person rather than generated around one relationship.
+
+────────────────────
+20. AI PROVIDER ARCHITECTURE
+────────────────────
+
+Design the backend so different AI providers can be connected separately for:
+
+TEXT GENERATION
+IMAGE GENERATION
+MUSIC GENERATION
+OPTIONAL AUDIO/VOICE GENERATION
+
+Create an Admin section:
+
+AI PROVIDERS
+
+Show connection status:
+
+Text AI: Not Connected / Connected
+Image AI: Not Connected / Connected
+Music AI: Not Connected / Connected
+Audio AI: Not Connected / Connected
+
+Never hardcode or expose secret API keys in frontend code.
+
+Use server-side environment variables/secrets.
+
+Do not invent provider credentials.
+
+────────────────────
+21. KEEP EDIT MODE
+────────────────────
+
+Keep my existing Edit Mode.
+
+I must still be able to manually create, edit and delete content even when AI generation is available.
+
+Manual edits always override AI-generated content.
+
+────────────────────
+22. PERSISTENCE
+────────────────────
+
+All approved and manually created content must persist.
+
+Do not destroy existing content during this upgrade.
+
+Use structured persistent storage.
+
+Prepare the architecture so cloud synchronization can be added later.
+
+────────────────────
+23. EXISTING DESIGN
+────────────────────
+
+DO NOT redesign my existing phone.
+
+I already like its current appearance.
+
+Keep:
+
+current aesthetic
+current Home Screen
+current icons
+current wallpaper
+current animations
+current navigation
+current Edit Mode
+current PWA behavior
+
+New apps and screens should visually match what already exists.
+
+The final experience should feel like Hyunjin’s fictional phone is continuously accumulating a believable digital history alongside my Kindroid roleplay.
